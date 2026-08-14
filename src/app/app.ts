@@ -1,9 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SplashStoreComposant } from './core/intros/component/splash-store-composant/splash-store-composant';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet,ConfirmDialogModule, SplashStoreComposant],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

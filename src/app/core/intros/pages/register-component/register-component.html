@@ -1,0 +1,38 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="logo">UC</div>
+      <div>
+        <h1>Créer un compte</h1>
+        <p>Votre rôle sera validé par l’administrateur</p>
+      </div>
+    </div>
+
+    @if (store.error()) {
+      <div class="alert">{{ store.error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <label>Nom</label>
+      <input formControlName="lastName" placeholder="Votre nom" />
+
+      <label>Prénom</label>
+      <input formControlName="firstName" placeholder="Votre prénom" />
+
+      <label>Email</label>
+      <input type="email" formControlName="email" placeholder="exemple@mail.com" />
+
+      <label>Mot de passe</label>
+      <input type="password" formControlName="password" placeholder="Minimum 6 caractères" />
+
+      <button type="submit" [disabled]="store.loading()">
+        {{ store.loading() ? 'Création...' : 'Créer mon compte' }}
+      </button>
+    </form>
+
+    <p class="link">
+      Déjà un compte ?
+      <a routerLink="/login">Se connecter</a>
+    </p>
+  </div>
+</div>

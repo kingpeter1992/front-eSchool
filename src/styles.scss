@@ -1,1 +1,41 @@
 /* You can add global styles to this file, and also import other style files */
+/* Style du conteneur de succès */
+.mat-mdc-snack-bar-container.snackbar-success {
+  --mdc-snackbar-container-color: #10b981 !important; /* Fond vert moderne (Emerald) */
+  --mdc-snackbar-supporting-text-color: #ffffff !important; /* Texte blanc pur */
+  --mat-snack-bar-button-color: #ffffff !important; /* Couleur du bouton "OK" */
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Texte à l'intérieur */
+.snackbar-success .mdc-snackbar__label {
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  color: #ffffff !important;
+}
+
+/* Bouton OK */
+.snackbar-success .mat-mdc-snack-bar-action {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-transform: uppercase;
+}
+
+/* Erreur / Danger */
+.mat-mdc-snack-bar-container.snackbar-error {
+  --mdc-snackbar-container-color: #ef4444 !important; /* Rouge */
+  --mdc-snackbar-supporting-text-color: #ffffff !important;
+  --mat-snack-bar-button-color: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Information */
+.mat-mdc-snack-bar-container.snackbar-info {
+  --mdc-snackbar-container-color: #6366f1 !important; /* Indigo / Violet */
+  --mdc-snackbar-supporting-text-color: #ffffff !important;
+  --mat-snack-bar-button-color: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4) !important;
+}

@@ -1,0 +1,29 @@
+<div class="splash-overlay" *ngIf="splashStore.visible()">
+  <!-- Cercles décoratifs d'arrière-plan pour l'effet Premium -->
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+
+  <div class="splash-card">
+    <div class="logo-wrapper">
+      <img src="assets/logo.png" class="logo" alt="Logo eSchool">
+      <div class="logo-pulse"></div>
+    </div>
+
+    <div class="header-text">
+      <h1>eSchool <span>Management</span></h1>
+      <p class="subtitle">Préparation de votre espace de travail...</p>
+    </div>
+
+    <!-- Barre de progression personnalisée -->
+    <div class="progress-wrapper">
+      <mat-progress-bar mode="determinate" [value]="splashStore.progress()">
+      </mat-progress-bar>
+    </div>
+
+    <!-- Zone de statut (Pourcentage & Message) -->
+    <div class="status-footer">
+      <span class="message">{{ splashStore.message() }}</span>
+      <span class="percent">{{ splashStore.progress() }}%</span>
+    </div>
+  </div>
+</div>

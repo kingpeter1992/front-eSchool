@@ -1,0 +1,122 @@
+<div class="layout">
+
+  <!-- OVERLAY MOBILE -->
+  <div class="overlay" [class.show]="sidebarOpen" (click)="sidebarOpen = false"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" [class.closed]="!sidebarOpen">
+    <div class="logo-area">
+      @if (displayLogoUrl()) {
+        <img [src]="displayLogoUrl()" alt="E-school Logo" class="logo-img" />
+      }
+      <div class="brand">
+        <h2>{{ displaySchoolName() }}</h2>
+        <span>Management System</span>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" placeholder="Rechercher...">
+    </div>
+
+    <div class="menu">
+      @for(item of filteredMenuItems(); track item.label){
+        <div class="menu-section">
+
+          <!-- CAS 1 : MENU SIMPLE (NAVIGATION DIRECTE) -->
+          @if(item.route && !item.children?.length){
+            <a class="menu-parent link" [routerLink]="item.route" routerLinkActive="active">
+              <div class="left">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+              </div>
+            </a>
+          }
+
+          <!-- CAS 2 : MENU AVEC SOUS-MENUS -->
+          @else {
+            <button class="menu-parent" (click)="toggleMenu(item)">
+              <div class="left">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+              </div>
+              <i class="pi" [class.pi-chevron-down]="item.expanded" [class.pi-chevron-right]="!item.expanded"></i>
+            </button>
+
+            @if(item.expanded){
+              <div class="submenu">
+                @for(child of item.children; track child.label){
+                  <a [routerLink]="child.route" routerLinkActive="active" class="submenu-link">
+                    <i [class]="child.icon"></i>
+                    <span>{{ child.label }}</span>
+                  </a>
+                }
+              </div>
+            }
+          }
+
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <button class="menu-btn" (click)="toggleSidebar()">
+        <i class="pi pi-bars"></i>
+      </button>
+
+      <div>
+        <h2>Bienvenue 👋</h2>
+        <span>{{ displaySchoolName() }}</span>
+      </div>
+
+      <div class="flex justify-center">
+        <p-menubar [model]="items1" styleClass="custom-profile-menu" class="max-[960px]:w-full">
+          <ng-template pTemplate="item" let-item>
+
+            <!-- ÉLÉMENT PARENT (Le bouton Pilule Principal) -->
+            @if (item.data) {
+              <div class="user-action-widget">
+                <div class="user-avatar">
+                  <span class="avatar-text">{{ item.data.initials }}</span>
+                </div>
+
+                <div class="user-details">
+                  <div class="user-header">
+                    <span class="user-name">{{ item.label }}</span>
+                    <span class="profile-icon">
+                      <i class="pi pi-user"></i>
+                    </span>
+                  </div>
+                  <div class="user-role">{{ item.data.role }}</div>
+                </div>
+
+                <!-- Déconnexion directe au clic sur l'icône rouge -->
+                <span class="logout-icon" (click)="$event.stopPropagation(); item.items?.[1]?.command?.()">
+                  <i class="pi pi-sign-out"></i>
+                </span>
+              </div>
+            }
+
+            <!-- ÉLÉMENTS DU SOUS-MENU (Profil / Déconnexion) -->
+            @else {
+              <a [routerLink]="item.routerLink" class="custom-submenu-item">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+              </a>
+            }
+
+          </ng-template>
+        </p-menubar>
+      </div>
+    </header>
+
+    <section class="content">
+      <router-outlet />
+    </section>
+  </main>
+
+</div>
