@@ -1,1 +1,130 @@
-<p>dasboard-school works!</p>
+<div class="school-container">
+
+  <!-- Header -->
+  <header class="school-header">
+    <div>
+      <h1 class="title">🏫 Gestion des Établissements</h1>
+      <p class="subtitle">Administration globale et paramètres multi-tenant</p>
+    </div>
+    <button (click)="openCreateModal()" class="btn btn-primary">
+      <span>+</span> Nouvelle École
+    </button>
+  </header>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <button (click)="filterByStatus(undefined)"
+            [class.active]="!store.selectedStatus()" class="btn-filter">
+      Tous
+    </button>
+    <button (click)="filterByStatus(SchoolStatus.ACTIVE)"
+            [class.active]="store.selectedStatus() === SchoolStatus.ACTIVE" class="btn-filter">
+      Actives
+    </button>
+    <button (click)="filterByStatus(SchoolStatus.PENDING)"
+            [class.active]="store.selectedStatus() === SchoolStatus.PENDING" class="btn-filter">
+      En Attente
+    </button>
+    <button (click)="filterByStatus(SchoolStatus.SUSPENDED)"
+            [class.active]="store.selectedStatus() === SchoolStatus.SUSPENDED" class="btn-filter">
+      Suspendues
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="store.isLoading()" class="loader-container">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Cards Grid -->
+  <div *ngIf="!store.isLoading()" class="school-grid">
+    <div *ngFor="let school of store.schools()" class="school-card">
+      <div class="card-content">
+        <div class="card-header">
+          <div class="info-group">
+            <img [src]="school.logoUrl || 'assets/default-school.png'" class="school-logo" alt="Logo">
+            <div>
+              <h3 class="school-name">{{ school.name }}</h3>
+              <span class="school-code">{{ school.code }}</span>
+            </div>
+          </div>
+          <span class="badge" [ngClass]="school.status.toLowerCase()">
+            {{ school.status }}
+          </span>
+        </div>
+
+        <div class="school-details">
+          <p>✉️ {{ school.email }}</p>
+          <p *ngIf="school.phone">📞 {{ school.phone }}</p>
+          <p *ngIf="school.domain">🌐 {{ school.domain }}</p>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button (click)="openEditModal(school)" class="btn-action">Éditer</button>
+        <div class="action-group">
+          <button *ngIf="school.status !== SchoolStatus.ACTIVE"
+                  (click)="changeStatus(school.id, SchoolStatus.ACTIVE)"
+                  class="btn-status active">Activer</button>
+          <button *ngIf="school.status === SchoolStatus.ACTIVE"
+                  (click)="changeStatus(school.id, SchoolStatus.SUSPENDED)"
+                  class="btn-status suspend">Suspendre</button>
+          <button (click)="deleteSchool(school.id)" class="btn-status delete">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal()" class="modal-backdrop">
+    <div class="modal-card">
+      <h2 class="modal-title">
+        {{ isEditMode() ? 'Modifier l\'Établissement' : 'Créer un Établissement' }}
+      </h2>
+
+      <form [formGroup]="schoolForm" (ngSubmit)="saveSchool()" class="form-layout">
+
+        <div class="logo-upload-group">
+          <div class="logo-preview">
+            <img *ngIf="logoPreviewUrl()" [src]="logoPreviewUrl()" alt="Preview">
+            <span *ngIf="!logoPreviewUrl()">Logo</span>
+          </div>
+          <input type="file" (change)="onFileSelected($event)" accept="image/*">
+        </div>
+
+        <div class="form-field">
+          <label>Nom Officiel</label>
+          <input formControlName="name" type="text" placeholder="Ex: eSchool Campus">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Email</label>
+            <input formControlName="email" type="email">
+          </div>
+          <div class="form-field">
+            <label>Téléphone</label>
+            <input formControlName="phone" type="text">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Devise</label>
+            <input formControlName="currency" type="text">
+          </div>
+          <div class="form-field">
+            <label>Sous-domaine</label>
+            <input formControlName="domain" type="text" placeholder="campus.eschool.com">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeModal()" class="btn btn-secondary">Annuler</button>
+          <button type="submit" [disabled]="schoolForm.invalid" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
