@@ -4,19 +4,39 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: '',
     redirectTo: 'dashboard',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'schools',
-    loadComponent: () =>
-      import('./pages/admin-school/admin-school')
-        .then(m => m.AdminSchool)
+    loadChildren: () => import('../features/Schools/schools.routes').then((m) => m.SCHOOLS_ROUTES),
   },
   {
-    path: 'users',
+    path: 'subscription', // ➔ Ne pas remettre 'schools/:id' ici car il hérite déjà du parent 'schools'
     loadComponent: () =>
-      import('./pages/admin-user/admin-user')
-        .then(m => m.AdminUser)
+      import('../Admin/pages/dasboard-subcription/dasboard-subcription').then(
+        (m) => m.DasboardSubcription,
+      ),
   },
 
+  {
+    path: 'subscriptions/school/:schoolId',
+    loadComponent: () =>
+      import('../Admin/pages/detail-souscription/detail-souscription').then(
+        (m) => m.DetailSouscription,
+      ),
+  },
+
+// 🟢 Route finale accessible via /admin/subscriptions/school/:schoolId
+  {
+    path: 'subscriptions/school/:schoolId',
+    loadComponent: () =>
+      import('../Admin/pages/detail-souscription/detail-souscription').then(
+        (m) => m.DetailSouscription,
+      ),
+  },
+
+  {
+    path: 'users',
+    loadComponent: () => import('./pages/admin-user/admin-user').then((m) => m.AdminUser),
+  },
 ];

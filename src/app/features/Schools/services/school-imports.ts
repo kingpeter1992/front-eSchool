@@ -1,6 +1,6 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
 
 // Vous pouvez aussi y mettre des modules Angular Material, PrimeNG, etc.
 export const SCHOOL_IMPORTS = [
@@ -8,5 +8,9 @@ export const SCHOOL_IMPORTS = [
   ReactiveFormsModule,
   FormsModule,
   RouterLink,
-  RouterOutlet
+  RouterOutlet,
+  CommonModule,
+   CurrencyPipe,
+    DatePipe,
+    RouterModule
 ] as const;

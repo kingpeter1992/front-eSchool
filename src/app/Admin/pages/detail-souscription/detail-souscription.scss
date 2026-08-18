@@ -1,0 +1,200 @@
+.detail-container {
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.btn-back {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.btn-back:hover {
+  color: #0284c7;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+.detail-header .school-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.progress-section {
+  margin-top: 1.2rem;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.custom-progress-container.lg {
+  height: 12px;
+  background-color: #22c55e;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-elapsed {
+  height: 100%;
+  background-color: #ef4444;
+  transition: width 0.4s ease;
+}
+
+.expired-text {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+
+/* ==========================================================================
+   DESIGN PREMIUM D'IMPRESSION (PDF)
+   ========================================================================== */
+@media print {
+  /* 1. Masquer les éléments hors document */
+  nav, sidebar, .btn-back, .btn-print, .btn-email-enhanced, .modal, .no-print {
+    display: none !important;
+  }
+
+  /* 2. Format de page et marges */
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    font-family: 'Helvetica Neue', Arial, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .detail-container {
+    padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* 3. En-tête Premium PDF */
+  .pdf-header-print {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #0284c7;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+  }
+
+  .pdf-header-print .brand-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .pdf-header-print .doc-type {
+    text-align: right;
+    font-size: 14px;
+    color: #0284c7;
+    font-weight: 700;
+  }
+
+  /* 4. Cartes et Selections */
+  .card {
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-bottom: 20px !important;
+    padding: 20px !important;
+    border-radius: 8px !important;
+  }
+
+  .info-row {
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 10px 0 !important;
+  }
+
+  /* 5. Barre de progression en impression */
+  .custom-progress-container {
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  /* 6. Filigrane de sécurité Premium */
+  .pdf-footer-print {
+    display: block !important;
+    margin-top: 40px;
+    text-align: center;
+    font-size: 10px;
+    color: #94a3b8;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 15px;
+  }
+}
+
+/* Cache l'en-tête et le pied de page PDF à l'écran */
+.pdf-header-print,
+.pdf-footer-print {
+  display: none;
+}
+/* Style du bouton d'impression écran */
+.btn-print {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-print:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}

@@ -25,6 +25,14 @@ export interface SchoolResponse {
   logoUrl?: string;
   status: SchoolStatus;
   campuses: CampusResponse[];
+
+  // Statistiques affichées dans le dashboard
+  totalStudents?: number;
+  totalTeachers?: number;
+  totalCourses?: number;
+  totalClasses?: number;
+  totalParents?: number;
+  totalCampuses?: number;
 }
 
 export interface SchoolRequest {

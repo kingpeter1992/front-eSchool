@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SchoolStatus, SchoolResponse, SchoolRequest } from '../../models/school.model';
 import { SchoolStore } from '../../services/school.store';
 import { SCHOOL_IMPORTS } from '../../services/school-imports';
+import { Toast } from '../../../../shared/toaste/Toast';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dasboard-school',
@@ -14,6 +16,11 @@ import { SCHOOL_IMPORTS } from '../../services/school-imports';
 export class DasboardSchool implements OnInit {
  protected readonly store = inject(SchoolStore);
   private readonly fb = inject(FormBuilder);
+  private readonly toast = inject(Toast)
+  private readonly router = inject(Router);
+
+  // 🟢 Signal/Variable pour le loader de soumission
+  isSubmitting = signal<boolean>(false);
 
   readonly SchoolStatus = SchoolStatus;
 
@@ -76,26 +83,43 @@ export class DasboardSchool implements OnInit {
     }
   }
 
-  saveSchool(): void {
-    if (this.schoolForm.invalid) return;
+saveSchool(): void {
+  if (this.schoolForm.invalid) return;
 
-    // Confection stricte de l'objet conforme à SchoolRequest
-    const request: SchoolRequest = {
-      name: this.schoolForm.value.name,
-      email: this.schoolForm.value.email,
-      phone: this.schoolForm.value.phone,
-      currency: this.schoolForm.value.currency,
-      timezone: this.schoolForm.value.timezone,
-      domain: this.schoolForm.value.domain,
-      logoFile: this.selectedLogoFile
-    };
+  // 🟢 Activer le loader
+  this.isSubmitting.set(true);
 
-    if (this.isEditMode() && this.selectedSchoolId()) {
-      this.store.updateSchool(this.selectedSchoolId()!, request).subscribe(() => this.closeModal());
-    } else {
-      this.store.createSchool(request).subscribe(() => this.closeModal());
+  const request: SchoolRequest = {
+    name: this.schoolForm.value.name,
+    email: this.schoolForm.value.email,
+    phone: this.schoolForm.value.phone,
+    currency: this.schoolForm.value.currency,
+    timezone: this.schoolForm.value.timezone,
+    domain: this.schoolForm.value.domain,
+    logoFile: this.selectedLogoFile
+  };
+
+  const action$ = (this.isEditMode() && this.selectedSchoolId())
+    ? this.store.updateSchool(this.selectedSchoolId()!, request)
+    : this.store.createSchool(request);
+
+  action$.subscribe({
+    next: () => {
+      this.toast.showSuccess('opération reusi avec succes')
+      this.isSubmitting.set(false); // 🔴 Stopper le loader
+      this.closeModal();
+    },
+    error: (err) => {
+      console.error('Erreur lors de la sauvegarde:', err);
+      this.toast.showError('Erreur lors de la sauvegarde')
+      this.isSubmitting.set(false); // 🔴 Stopper le loader même en cas d'erreur
     }
-  }
+  });
+}
+
+  getCountByStatus(status: SchoolStatus): number {
+  return this.store.schools().filter(s => s.status === status).length;
+}
 
   changeStatus(schoolId: string, status: SchoolStatus): void {
     this.store.updateStatus(schoolId, status).subscribe();
@@ -110,4 +134,14 @@ export class DasboardSchool implements OnInit {
   closeModal(): void {
     this.showModal.set(false);
   }
+
+// Option 1 : Chemin absolu complet
+viewSchoolDetails(school: SchoolResponse): void {
+  if (!school?.id) {
+    console.error('ID de l’école manquant');
+    return;
+  }
+
+  this.router.navigate(['/admin/schools', school.id]);
+}
 }

@@ -1,0 +1,76 @@
+<div class="activation-wrapper">
+  <div class="activation-card" *ngIf="!store.loading(); else loadingTpl">
+
+    <!-- Message d'erreur -->
+    <div *ngIf="store.error()" class="alert-danger">
+      {{ store.error() }}
+    </div>
+
+    <div *ngIf="store.context() && !store.error()">
+      <div class="card-header">
+        <h2>Bienvenue {{ store.context()?.firstName }} !</h2>
+        <p>Veuillez configurer votre accès pour finaliser votre compte.</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+        <!-- Mot de passe -->
+        <div class="form-group">
+          <label>Nouveau mot de passe *</label>
+          <input type="password" formControlName="password" class="form-control" placeholder="8 caractères minimum" />
+        </div>
+
+        <div class="form-group">
+          <label>Confirmer le mot de passe *</label>
+          <input type="password" formControlName="confirmPassword" class="form-control" placeholder="Répéter le mot de passe" />
+        </div>
+
+        <!-- SECTION : DÉTAILS DU RÔLE -->
+        <div class="role-section" *ngIf="store.userRole()">
+
+          <!-- SUPER ADMIN / ADMIN / DIRECTEUR -->
+          <div *ngIf="['ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_DIRECTEUR'].includes(store.userRole())">
+            <span class="role-badge">Administration</span>
+            <div class="form-group">
+              <label>Matricule / Identifiant</label>
+              <input type="text" formControlName="matricule" class="form-control" placeholder="Ex: DIR-2026-X" />
+            </div>
+          </div>
+
+          <!-- PARENT -->
+          <div *ngIf="store.userRole() === 'ROLE_PARENT'">
+            <span class="role-badge">Espace Parent</span>
+            <div class="form-group">
+              <label>Profession</label>
+              <input type="text" formControlName="occupation" class="form-control" placeholder="Votre profession" />
+            </div>
+            <div class="form-group">
+              <label>Téléphone joignable</label>
+              <input type="tel" formControlName="phone" class="form-control" placeholder="+243..." />
+            </div>
+          </div>
+
+          <!-- ELEVE -->
+          <div *ngIf="store.userRole() === 'ROLE_ELEVE'">
+            <span class="role-badge">Espace Élève</span>
+            <div class="form-group">
+              <label>Date de naissance</label>
+              <input type="date" formControlName="birthDate" class="form-control" />
+            </div>
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="store.loading()">
+          Activer mon compte
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="activation-card" style="text-align: center;">
+      <p>Vérification du lien d'activation en cours...</p>
+    </div>
+  </ng-template>
+</div>

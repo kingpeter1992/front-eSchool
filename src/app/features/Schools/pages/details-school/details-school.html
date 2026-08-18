@@ -1,0 +1,295 @@
+@if (store.isLoadingSchool()) {
+  <div class="loading-state">
+    <i class="pi pi-spin pi-spinner spinner"></i>
+    <span>Chargement de l'établissement...</span>
+  </div>
+} @else if (store.schoolError()) {
+  <div class="error-card">
+    <i class="pi pi-exclamation-triangle error-icon"></i>
+    <h3>Impossible de charger l'établissement</h3>
+    <p>{{ store.schoolError() }}</p>
+    <div class="error-actions">
+      <button type="button" class="btn btn-secondary" (click)="reload()">
+        <i class="pi pi-refresh"></i> Réessayer
+      </button>
+      <button type="button" class="btn btn-primary" (click)="goBack()">
+        <i class="pi pi-arrow-left"></i> Retour
+      </button>
+    </div>
+  </div>
+} @else if (store.selectedSchool()) {
+
+  @let school = store.selectedSchool()!;
+
+  <div class="school-detail-page">
+
+    <!-- HEADER -->
+    <header class="school-header">
+      <div class="header-left">
+        <button class="back-button" type="button" (click)="goBack()" title="Retour">
+          <i class="pi pi-arrow-left"></i>
+        </button>
+
+        <div class="school-logo-wrapper">
+          <img [src]="school.logoUrl || 'assets/default-school.png'" alt="Logo école" class="school-logo" />
+        </div>
+
+        <div class="school-heading">
+          <div class="title-line">
+            <h1>{{ school.name }}</h1>
+            <span class="status-badge" [ngClass]="school.status?.toLowerCase() || 'pending'">
+              <span class="status-dot"></span>
+              {{ school.status }}
+            </span>
+          </div>
+
+          <p>
+            {{ school.code }}
+            <span class="separator">•</span>
+            {{ school.domain || 'Aucun domaine configuré' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn btn-secondary" (click)="openEditModal()">
+          <i class="pi pi-pencil"></i>
+          Modifier
+        </button>
+        <button type="button" class="btn btn-primary">
+          <i class="pi pi-cog"></i>
+          Paramètres
+        </button>
+      </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="school-tabs">
+      <button class="school-tab" [class.active]="activeTab() === 'general'" (click)="setTab('general')" type="button">
+        <i class="pi pi-home"></i> Vue générale
+      </button>
+      <button class="school-tab" [class.active]="activeTab() === 'campuses'" (click)="setTab('campuses')" type="button">
+        <i class="pi pi-building"></i> Campus ({{ school.campuses?.length || 0 }})
+      </button>
+      <button class="school-tab" [class.active]="activeTab() === 'years'" (click)="setTab('years')" type="button">
+        <i class="pi pi-calendar"></i> Années scolaires
+      </button>
+      <button class="school-tab" [class.active]="activeTab() === 'users'" (click)="setTab('users')" type="button">
+        <i class="pi pi-users"></i> Utilisateurs
+      </button>
+      <button class="school-tab" [class.active]="activeTab() === 'security'" (click)="setTab('security')" type="button">
+        <i class="pi pi-shield"></i> Sécurité
+      </button>
+      <button class="school-tab" [class.active]="activeTab() === 'audit'" (click)="setTab('audit')" type="button">
+        <i class="pi pi-history"></i> Audit
+      </button>
+    </nav>
+
+    <!-- TAB 1: VUE GÉNÉRALE -->
+    @if (activeTab() === 'general') {
+
+      <!-- KPI GRID -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="pi pi-building"></i></div>
+          <div class="kpi-content">
+            <span class="kpi-label">Campus</span>
+            <strong class="kpi-value">{{ school.totalCampuses ?? school.campuses?.length ?? 0 }}</strong>
+            <span class="kpi-description">établissements</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon violet"><i class="pi pi-users"></i></div>
+          <div class="kpi-content">
+            <span class="kpi-label">Élèves ({{ selectedAcademicYear() }})</span>
+            <strong class="kpi-value">{{ school.totalStudents || 0 }}</strong>
+            <span class="kpi-description">élèves inscrits</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon emerald"><i class="pi pi-user"></i></div>
+          <div class="kpi-content">
+            <span class="kpi-label">Enseignants</span>
+            <strong class="kpi-value">{{ school.totalTeachers || 0 }}</strong>
+            <span class="kpi-description">enseignants actifs</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon orange"><i class="pi pi-sitemap"></i></div>
+          <div class="kpi-content">
+            <span class="kpi-label">Classes</span>
+            <strong class="kpi-value">{{ school.totalClasses || 0 }}</strong>
+            <span class="kpi-description">classes enregistrées</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONTENT GRID -->
+      <div class="content-grid">
+
+        <!-- INFORMATIONS GÉNÉRALES -->
+        <section class="card school-information">
+          <div class="card-header">
+            <div>
+              <h2>Informations de l'établissement</h2>
+              <p>Informations statiques</p>
+            </div>
+            <button class="icon-button" (click)="openEditModal()" title="Modifier">
+              <i class="pi pi-pencil"></i>
+            </button>
+          </div>
+
+          <div class="information-grid">
+            <div class="information-item">
+              <span class="information-label">Nom officiel</span>
+              <strong>{{ school.name || '-' }}</strong>
+            </div>
+            <div class="information-item">
+              <span class="information-label">Code</span>
+              <strong>{{ school.code || '-' }}</strong>
+            </div>
+            <div class="information-item">
+              <span class="information-label">E-mail</span>
+              <strong>{{ school.email || '-' }}</strong>
+            </div>
+            <div class="information-item">
+              <span class="information-label">Téléphone</span>
+              <strong>{{ school.phone || '-' }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- SÉLECTEUR D'ANNÉE SCOLAIRE -->
+        <section class="card academic-card">
+          <div class="card-header">
+            <div>
+              <h2>Année Scolaire Active</h2>
+              <p>Sélectionnez l'année pour filtrer les données</p>
+            </div>
+            <i class="pi pi-calendar card-header-icon"></i>
+          </div>
+
+          <div class="academic-current">
+            <div class="academic-icon"><i class="pi pi-calendar"></i></div>
+            <div style="flex: 1;">
+              <span>Année affichée</span>
+              <select
+                class="year-select"
+                [ngModel]="selectedAcademicYear()"
+                (ngModelChange)="onAcademicYearChange($event)">
+                @for (year of academicYears(); track year) {
+                  <option [value]="year">{{ year }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <button class="outline-button" type="button" (click)="setTab('years')">
+            <i class="pi pi-cog"></i>
+            Gérer les années scolaires
+          </button>
+        </section>
+
+      </div>
+    }
+
+    <!-- TAB 2: CAMPUS -->
+    @if (activeTab() === 'campuses') {
+      <div class="card">
+        <h2>Liste des Campus</h2>
+        <p>Affichage dynamique des campus...</p>
+      </div>
+    }
+
+    <!-- TAB 3: ANNÉES SCOLAIRES -->
+    @if (activeTab() === 'years') {
+      <div class="card">
+        <h2>Gestion des Années Scolaires</h2>
+        <p>Création et configuration des sessions académiques...</p>
+      </div>
+    }
+
+    <!-- TAB 4: UTILISATEURS -->
+    @if (activeTab() === 'users') {
+      <div class="card">
+        <h2>Gestion des Utilisateurs</h2>
+        <p>Membres rattachés à l'année : <strong>{{ selectedAcademicYear() }}</strong></p>
+      </div>
+    }
+
+  </div>
+
+  <!-- 🟢 MODAL DE MODIFICATION -->
+ <!-- MODAL DE MODIFICATION -->
+<div *ngIf="isEditModalOpen()" class="modal-backdrop">
+  <div class="modal-card">
+
+    <!-- Spinner Overlay lors de la soumission -->
+    <div *ngIf="isSubmitting()" class="modal-loader-overlay">
+      <div class="spinner"></div>
+      <span>Enregistrement en cours...</span>
+    </div>
+
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{ isEditMode() ? 'Modifier l\'Établissement' : 'Créer un Établissement' }}
+      </h2>
+      <button (click)="closeModal()" class="close-btn" [disabled]="isSubmitting()">&times;</button>
+    </div>
+
+    <form [formGroup]="schoolForm" (ngSubmit)="saveSchool()" class="form-layout">
+
+      <div class="logo-upload-group">
+        <div class="logo-preview">
+          <img *ngIf="logoPreviewUrl()" [src]="logoPreviewUrl()" alt="Preview">
+          <span *ngIf="!logoPreviewUrl()">Logo</span>
+        </div>
+        <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input">
+      </div>
+
+      <div class="form-field">
+        <label>Nom Officiel</label>
+        <input formControlName="name" type="text" placeholder="Ex: Complexe Scolaire Alpha">
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Email</label>
+          <input formControlName="email" type="email" placeholder="contact@alpha.com">
+        </div>
+        <div class="form-field">
+          <label>Téléphone</label>
+          <input formControlName="phone" type="text" placeholder="+243 ...">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label>Devise</label>
+          <input formControlName="currency" type="text" placeholder="USD / EUR">
+        </div>
+        <div class="form-field">
+          <label>Sous-domaine</label>
+          <input formControlName="domain" type="text" placeholder="alpha.eschool.com">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" (click)="closeModal()" [disabled]="isSubmitting()" class="btn btn-secondary">
+          Annuler
+        </button>
+        <button type="submit" [disabled]="schoolForm.invalid || isSubmitting()" class="btn btn-primary">
+          <span *ngIf="!isSubmitting()">Enregistrer</span>
+          <span *ngIf="isSubmitting()" class="btn-spinner-text">
+            <i class="pi pi-spin pi-spinner"></i> Patientez...
+          </span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+}

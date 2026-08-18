@@ -9,6 +9,7 @@ import {
 import { Observable } from 'rxjs';
 import { StorageService } from '../storage-service/storage-service';
 import { Toast } from '../../shared/toaste/Toast';
+import { Role } from '../models/User';
 
 
 @Injectable({
@@ -40,7 +41,7 @@ export class AuthGuard implements CanActivate {
       return this.router.createUrlTree(['/login']);
     }
 
-    const allowedRoles = route.data['roles'] as string[] | undefined;
+    const allowedRoles = route.data['roles'] as Role[] | undefined;
 
     // Si aucune restriction de rôle n'est définie sur la route, on laisse passer
     if (!allowedRoles || allowedRoles.length === 0) {
@@ -55,7 +56,7 @@ export class AuthGuard implements CanActivate {
 
     // Vérifie si l'utilisateur possède au moins l'un des rôles autorisés
     const hasRole = userRoles.some(
-      (role: string) => allowedRoles.includes(role)
+      (role: Role) => allowedRoles.includes(role)
     );
 
     if (hasRole) {

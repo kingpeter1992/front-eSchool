@@ -1,0 +1,84 @@
+<div class="detail-container">
+
+  <!-- En-tête exclusif à l'impression PDF -->
+  <div class="pdf-header-print">
+    <div>
+      <div class="brand-title">E-SCHOOL PLATFORM</div>
+      <small style="color: #64748b;">Attestation Officielle d'Abonnement</small>
+    </div>
+    <div class="doc-type">
+      REÇU D'ABONNEMENT<br>
+      <small style="color: #64748b;">Généré le {{ now | date:'dd/MM/yyyy HH:mm' }}</small>
+    </div>
+  </div>
+
+  <!-- Barre d'actions d'interface (Non imprimée) -->
+  <div class="actions-bar no-print" style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+    <button type="button" class="btn-back" (click)="goBack()">
+      <i class="pi pi-arrow-left"></i> Retour à la liste
+    </button>
+
+    <!-- 🟢 Bouton d'impression Premium -->
+    <button type="button" class="btn-print" (click)="printSubscription()">
+      <i class="pi pi-print"></i> Imprimer / Imprimer en PDF
+    </button>
+  </div>
+
+  @if (subscription(); as sub) {
+    <!-- Contenu du détail -->
+    <div class="card detail-header">
+      <div class="school-title">
+        <h1>{{ sub.schoolName }}</h1>
+        <span class="status-badge" [ngClass]="sub.status.toLowerCase()">
+          {{ sub.isExpired ? 'EXPIRÉ' : sub.status }}
+        </span>
+      </div>
+      <p class="text-muted"><i class="pi pi-envelope"></i> {{ sub.schoolEmail }}</p>
+    </div>
+
+    <div class="detail-grid">
+      <!-- Tarification -->
+      <div class="card info-card">
+        <h3><i class="pi pi-id-card"></i> Formule & Tarif</h3>
+        <div class="info-row">
+          <span>Plan souscrit :</span>
+          <span class="plan-badge">{{ sub.planType }}</span>
+        </div>
+        <div class="info-row">
+          <span>Montant :</span>
+          <strong>{{ sub.amount | currency:sub.currency }}</strong>
+        </div>
+      </div>
+
+      <!-- Progression & Durée -->
+      <div class="card info-card">
+        <h3><i class="pi pi-calendar"></i> Période de Validité</h3>
+        <div class="info-row">
+          <span>Date de début :</span>
+          <span>{{ sub.startsAt | date:'dd MMMM yyyy' }}</span>
+        </div>
+        <div class="info-row">
+          <span>Date d'expiration :</span>
+          <span [class.expired-text]="sub.isExpired">
+            {{ sub.expiresAt | date:'dd MMMM yyyy' }}
+          </span>
+        </div>
+
+        <div class="progress-section">
+          <div class="progress-labels">
+            <small>Écoulé ({{ getElapsedPercentage(sub.startsAt, sub.expiresAt) }}%)</small>
+            <small>{{ getRemainingDays(sub.expiresAt) }} jours restants</small>
+          </div>
+          <div class="custom-progress-container lg">
+            <div class="progress-bar-elapsed" [style.width.%]="getElapsedPercentage(sub.startsAt, sub.expiresAt)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pied de page officiel imprimé -->
+    <div class="pdf-footer-print">
+      <p>Document officiel généré par le système E-School. Document à conserver à titre de justificatif.</p>
+    </div>
+  }
+</div>

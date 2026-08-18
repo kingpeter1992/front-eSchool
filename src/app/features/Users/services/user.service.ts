@@ -10,7 +10,7 @@ import { environment } from '../../../env';
 export class UserService {
 
   private http = inject(HttpClient);
-  private readonly apiUrl = `${environment.BASIC_URL}/api/users/v1`;
+  private readonly apiUrl = `${environment.BASIC_URL}/users`;
 
   private usersSubject = new BehaviorSubject<User[]>([]);
   public users$ = this.usersSubject.asObservable();

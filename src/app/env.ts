@@ -2,7 +2,7 @@ export const environment = {
 
 
   production: false,
-  BASIC_URL: "http://127.0.0.1:8082/api/",
+  BASIC_URL: "http://127.0.0.1:8082/api/v1",
   FILE_URL: 'http://127.0.0.1:8082',
   BASIC_URL_AUTH_LOGIN: "http://127.0.0.1:8082/api/auth/login",
   BASIC_URL_AUTH_ME: "http://127.0.0.1:8082/api/auth/me",

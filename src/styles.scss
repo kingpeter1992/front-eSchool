@@ -1,41 +1,43 @@
-/* You can add global styles to this file, and also import other style files */
-/* Style du conteneur de succès */
-.mat-mdc-snack-bar-container.snackbar-success {
-  --mdc-snackbar-container-color: #10b981 !important; /* Fond vert moderne (Emerald) */
-  --mdc-snackbar-supporting-text-color: #ffffff !important; /* Texte blanc pur */
-  --mat-snack-bar-button-color: #ffffff !important; /* Couleur du bouton "OK" */
+/* ========================================================= */
+/* CORRECTIF MATSNACKBAR - ANGLAR MATERIAL MDC               */
+/* ========================================================= */
+
+/* --- 1. SNACKBAR SUCCÈS (FOND VERT & TEXTE BLANC) --- */
+.mat-mdc-snack-bar-container.snackbar-success .mdc-snackbar__surface,
+.mat-mdc-snack-bar-container.success-snackbar .mdc-snackbar__surface {
+  background-color: #10b981 !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4) !important;
 }
 
-/* Texte à l'intérieur */
-.snackbar-success .mdc-snackbar__label {
-  font-weight: 500 !important;
-  font-size: 14px !important;
-  color: #ffffff !important;
-}
-
-/* Bouton OK */
-.snackbar-success .mat-mdc-snack-bar-action {
-  font-weight: 700 !important;
-  color: #ffffff !important;
-  text-transform: uppercase;
-}
-
-/* Erreur / Danger */
-.mat-mdc-snack-bar-container.snackbar-error {
-  --mdc-snackbar-container-color: #ef4444 !important; /* Rouge */
-  --mdc-snackbar-supporting-text-color: #ffffff !important;
-  --mat-snack-bar-button-color: #ffffff !important;
+/* --- 2. SNACKBAR ERREUR (FOND ROUGE & TEXTE BLANC) --- */
+.mat-mdc-snack-bar-container.snackbar-error .mdc-snackbar__surface,
+.mat-mdc-snack-bar-container.error-snackbar .mdc-snackbar__surface {
+  background-color: #ef4444 !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4) !important;
 }
 
-/* Information */
-.mat-mdc-snack-bar-container.snackbar-info {
-  --mdc-snackbar-container-color: #6366f1 !important; /* Indigo / Violet */
-  --mdc-snackbar-supporting-text-color: #ffffff !important;
-  --mat-snack-bar-button-color: #ffffff !important;
+/* --- 3. SNACKBAR INFO / LOADING (FOND BLEU-VIOLET & TEXTE BLANC) --- */
+.mat-mdc-snack-bar-container.snackbar-info .mdc-snackbar__surface,
+.mat-mdc-snack-bar-container.info-snackbar .mdc-snackbar__surface {
+  background-color: #6366f1 !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4) !important;
+}
+
+/* --- 4. COULEUR DU TEXTE DE MESSAGE (BLANC PUR FORCÉ) --- */
+.mat-mdc-snack-bar-container .mdc-snackbar__label,
+.mat-mdc-snack-bar-container .mdc-snackbar__surface .mdc-snackbar__label {
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* --- 5. COULEUR DU BOUTON D'ACTION ("OK", "Fermer") --- */
+.mat-mdc-snack-bar-container .mat-mdc-snack-bar-action,
+.mat-mdc-snack-bar-container .mat-mdc-snack-bar-action .mdc-button__label,
+.mat-mdc-snack-bar-container .mat-mdc-button {
+  color: #ffffff !important;
+  font-weight: 700 !important;
 }

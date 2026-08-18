@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class Toast {
 
-  private readonly snackBar = inject(MatSnackBar);
+ private readonly snackBar = inject(MatSnackBar);
 
   success(message: string): void {
     this.snackBar.open(message, 'OK', {
@@ -28,38 +28,27 @@ export class Toast {
   }
 
   info(message: string): void {
-    this.snackBar.open(message, undefined, {
+    this.snackBar.open(message, 'OK', {
       duration: 3000,
       horizontalPosition: 'right',
       verticalPosition: 'top',
-
+      panelClass: ['snackbar-info'] // 🟢 Class CSS ajoutée
     });
   }
 
+  showLoading(message: string) {
+    return this.snackBar.open(message, '', {
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['info-snackbar']
+    });
+  }
 
-   showLoading(message: string) {
-  return this.snackBar.open(message, '', {
-    horizontalPosition: 'end',
-    verticalPosition: 'top',
-    panelClass: ['info-snackbar']
-  });
-}
+  showSuccess(message: string) {
+    this.success(message);
+  }
 
- showSuccess(message: string) {
-  this.snackBar.open(message, 'Fermer', {
-    duration: 3000,
-    horizontalPosition: 'end',
-    verticalPosition: 'top',
-    panelClass: ['success-snackbar']
-  });
-}
-
- showError(message: string) {
-  this.snackBar.open(message, 'Fermer', {
-    duration: 5000,
-    horizontalPosition: 'end',
-    verticalPosition: 'top',
-    panelClass: ['error-snackbar']
-  });
-}
+  showError(message: string) {
+    this.error(message);
+  }
 }

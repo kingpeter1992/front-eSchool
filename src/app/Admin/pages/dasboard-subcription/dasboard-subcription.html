@@ -1,0 +1,310 @@
+<div class="dashboard-page">
+  <!-- 🟢 EN-TÊTE DE PAGE AVEC BOUTON DE CRÉATION GLOBAL -->
+  <header class="page-header">
+    <div>
+      <h1>Dashboard des Souscriptions</h1>
+      <p>Vue d'ensemble de la santé financière et suivi des abonnements</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" (click)="refreshData()">
+        <i class="pi pi-refresh"></i> Actualiser
+      </button>
+      <!-- 🟢 BOUTON PRINCIPAL CRÉER ABONNEMENT -->
+      <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+        <i class="pi pi-plus"></i> Nouveau abonnement
+      </button>
+    </div>
+  </header>
+
+  <!-- 🟢 ÉTAT DE CHARGEMENT -->
+  @if (store.isLoading()) {
+  <div class="loading-state">
+    <i class="pi pi-spin pi-spinner spinner"></i>
+    <span>Chargement des données...</span>
+  </div>
+  } @else if (store.stats(); as stats) {
+  <!-- 🟢 KPI CARDS -->
+  <section class="kpi-grid">
+    <div class="kpi-card highlight">
+      <div class="kpi-icon emerald"><i class="pi pi-dollar"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">MRR (Revenu Mensuel)</span>
+        <strong class="kpi-value">{{ stats.monthlyRecurringRevenue | currency:'USD' }}</strong>
+        <span class="kpi-description">Récurrent ce mois</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon blue"><i class="pi pi-chart-line"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">ARR (Projection Annuelle)</span>
+        <strong class="kpi-value">{{ stats.annualRecurringRevenue | currency:'USD' }}</strong>
+        <span class="kpi-description">Basé sur le MRR</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon violet"><i class="pi pi-check-circle"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Abonnements Actifs</span>
+        <strong class="kpi-value">{{ stats.activeSubscriptions }}</strong>
+        <span class="kpi-description">Écoles actives</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon orange"><i class="pi pi-clock"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Périodes d'essai</span>
+        <strong class="kpi-value">{{ stats.trialSubscriptions }}</strong>
+        <span class="kpi-description">En version Trial</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon red"><i class="pi pi-exclamation-circle"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Abonnements Expirés</span>
+        <strong class="kpi-value">{{ stats.expiredSubscriptions }}</strong>
+        <span class="kpi-description">À relancer</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 🟢 RÉPARTITION DES PLANS -->
+  <section class="card plans-distribution">
+    <h2>Répartition par Type de Plan</h2>
+    <div class="plans-grid">
+      @for (plan of stats.countByPlanType | keyvalue; track plan.key) {
+      <div class="plan-item">
+        <span class="plan-name">{{ plan.key }}</span>
+        <strong class="plan-count">{{ plan.value }} écoles</strong>
+      </div>
+      }
+    </div>
+  </section>
+  }
+
+<!-- 🟢 TABLEAU DES ABONNEMENTS -->
+<section class="card subscriptions-section">
+  <div class="section-header">
+    <h2>Liste des Abonnements</h2>
+  </div>
+
+  <div class="table-responsive">
+    <table class="subscriptions-table">
+      <thead>
+        <tr>
+          <th>Établissement</th>
+          <th>Plan</th>
+          <th>Montant</th>
+          <th>Période & Progression</th>
+          <th>Statut</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (sub of store.subscriptions(); track sub.id) {
+        <tr (click)="goToDetails(sub.schoolId)" class="clickable-row">
+          <td>
+            <strong>{{ sub.schoolName }}</strong><br>
+            <small class="text-muted">{{ sub.schoolEmail }}</small>
+          </td>
+
+          <td><span class="plan-badge">{{ sub.planType }}</span></td>
+
+          <td>{{ sub.amount | currency:sub.currency }}</td>
+
+          <!-- 🟢 Période + Barre de progression bicolore -->
+          <td class="progress-cell">
+            <div class="dates-info">
+              <small>{{ sub.startsAt | date:'dd/MM/yy' }}</small>
+              <small class="text-muted">➔</small>
+              <small [class.expired-text]="sub.isExpired">{{ sub.expiresAt | date:'dd/MM/yy' }}</small>
+            </div>
+
+            <!-- Progress Bar : Rouge (Écoulé) / Vert (Restant) -->
+            <div class="custom-progress-container" [title]="getElapsedPercentage(sub.startsAt, sub.expiresAt) + '% écoulé'">
+              <div
+                class="progress-bar-elapsed"
+                [style.width.%]="getElapsedPercentage(sub.startsAt, sub.expiresAt)">
+              </div>
+            </div>
+
+            <div class="days-remaining">
+              @if (sub.isExpired) {
+                <span class="badge-expired">Expiré</span>
+              } @else {
+                <small>{{ getRemainingDays(sub.expiresAt) }} jrs restants</small>
+              }
+            </div>
+          </td>
+
+          <td>
+            <span class="status-badge" [ngClass]="sub.status.toLowerCase()">
+              {{ sub.isExpired ? 'EXPIRÉ' : sub.status }}
+            </span>
+          </td>
+
+          <td class="text-right actions-cell" (click)="$event.stopPropagation()">
+            <!-- Bouton Édition -->
+            <button type="button" class="btn-action btn-edit" (click)="openEditModal(sub)" title="Modifier l'abonnement">
+              <i class="pi pi-pencil"></i> Modifier
+            </button>
+
+            <!-- 🟢 Bouton Email Amélioré -->
+            <button type="button" class="btn-action btn-email-enhanced" (click)="openEmailModal(sub)" title="Envoyer une relance par email">
+              <i class="pi pi-send"></i> Relancer
+            </button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="6" class="empty-state">
+            <p>Aucun abonnement enregistré.</p>
+            <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+              <i class="pi pi-plus"></i> Créer le premier abonnement
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+  <!-- 🟢 MODAL ADAPTATIVE (CRÉATION ET MODIFICATION) -->
+  @if (isModalOpen()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>{{ isEditMode() ? 'Modifier l\'abonnement' : 'Activer un abonnement' }}</h2>
+        <button type="button" class="btn-close" (click)="closeModal()">&times;</button>
+      </div>
+
+      <form [formGroup]="subscriptionForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+
+          <!-- 🟢 AUTOCOMPLETE ÉCOLE -->
+          @if (!isEditMode()) {
+          <div class="form-group autocomplete-container">
+            <label for="schoolSearch">Établissement / École</label>
+
+            <div class="input-with-icon">
+              <input id="schoolSearch" type="text" class="form-control"
+                placeholder="Rechercher par nom, email ou code..." [value]="selectedSchoolName()"
+                (input)="onSchoolSearchInput($event)" (focus)="isSchoolDropdownOpen.set(true)" />
+              <i class="pi pi-chevron-down dropdown-icon" (click)="toggleSchoolDropdown()"></i>
+            </div>
+
+            <!-- Controlleur masqué lié au FormBuilder -->
+            <input type="hidden" formControlName="schoolId" />
+
+            <!-- Résultats du filtrage -->
+            @if (isSchoolDropdownOpen()) {
+            <ul class="autocomplete-results">
+              @for (
+              school of filteredSchools();
+              track school.id
+              ) {
+              <li class="autocomplete-item" (click)="selectSchool(school)">
+                <div class="school-info">
+                  <strong>
+                    {{ school.name }}
+                  </strong>
+                  <small>
+                    {{ school.email }}
+                    • Code : {{ school.code }}
+                  </small>
+                </div>
+              </li>
+              } @empty {
+              <li class="autocomplete-item empty">
+                Aucun établissement trouvé
+              </li>
+              }
+            </ul>
+            }
+            @if (subscriptionForm.get('schoolId')?.touched && subscriptionForm.get('schoolId')?.invalid) {
+            <small class="error-text">Veuillez sélectionner un établissement dans la liste.</small>
+            }
+          </div>
+          } @else {
+          <div class="form-group">
+            <label>Établissement</label>
+            <input type="text" class="form-control" [value]="selectedSchoolName()" disabled />
+          </div>
+          }
+
+          <!-- Type de plan -->
+          <div class="form-group">
+            <label for="planType">Type de Plan</label>
+            <select id="planType" formControlName="planType" class="form-control">
+              @for (plan of PlanTypes; track plan) {
+              <option [value]="plan">{{ plan }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Durée en mois -->
+          <div class="form-group">
+            <label for="durationInMonths">Durée (en mois)</label>
+            <input id="durationInMonths" type="number" formControlName="durationInMonths" class="form-control"
+              placeholder="Ex: 12" />
+          </div>
+
+          <!-- Montant et Devise -->
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="amount">Montant</label>
+              <input id="amount" type="number" formControlName="amount" class="form-control" placeholder="0.00" />
+            </div>
+
+            <div class="form-group flex-1">
+              <label for="currency">Devise</label>
+              <select id="currency" formControlName="currency" class="form-control">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Statut (Affiché uniquement en Mode Modification) -->
+          @if (isEditMode()) {
+          <div class="form-group">
+            <label for="status">Statut de l'abonnement</label>
+            <select id="status" formControlName="status" class="form-control">
+              @for (st of StatusTypes; track st) {
+              <option [value]="st">{{ st }}</option>
+              }
+            </select>
+          </div>
+          }
+
+        </div>
+
+        <div class="modal-footer">
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="isSubmitting()">
+              Annuler
+            </button>
+
+            <button type="submit" class="btn btn-primary"
+              [disabled]="subscriptionForm.invalid || isSubmitting() || store.isLoading()">
+
+              @if (isSubmitting()) {
+              <i class="pi pi-spin pi-spinner"></i> Traitement...
+              } @else {
+              <i class="pi pi-check"></i>
+              {{ isEditMode() ? 'Enregistrer les modifications' : 'Activer l\'abonnement' }}
+              }
+            </button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+  }
+</div>

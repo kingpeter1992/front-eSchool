@@ -5,6 +5,7 @@ import { Toast } from '../../../../shared/toaste/Toast';
 import { AuthStoreService } from '../../../services/auth-store-service';
 import { StorageService } from '../../../storage-service/storage-service';
 import { LoaderComponent } from '../../../../shared/components/loader-component/loader-component';
+import { Role } from '../../../models/User';
 
 
 @Component({
@@ -31,7 +32,7 @@ export class LoginComponent implements OnInit {
 currentYear = new Date().getFullYear();
   isLoggedIn = false;
 
-  roles: string[] = [];
+  roles: Role[] = [];
 
 
   form = this.fb.nonNullable.group({
@@ -60,7 +61,6 @@ currentYear = new Date().getFullYear();
 
       const user =
         this.storageService.getUser();
-
       this.roles =
         user?.user?.roles ?? [];
     }

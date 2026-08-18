@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, finalize } from 'rxjs';
 import { environment } from '../../env';
 import { LoaderService } from '../../shared/loader/loader-service';
-import { LoginRequest, User, CreateUserDto, AuthResponse } from '../models/User';
+import { LoginRequest, User, CreateUserDto, AuthResponse, Permission, Role } from '../models/User';
 
 @Injectable({
   providedIn: 'root',
@@ -52,9 +52,20 @@ export class AuthService {
 
     getUser(user: any) {
           this.loaderService.show();
- return this.http
+   return this.http
       .post(environment.BASIC_URL+'/'+user?.id, this.httpOptions)
       .pipe(finalize(() => this.loaderService.hide()));
 
     }
-}
+getRoles(): Observable<Role[]> {
+    return this.http.get<Role[]>(`${environment.BASIC_URL}/roles`);
+  }
+
+  getPermissions(): Observable<Permission[]> {
+    return this.http.get<Permission[]>(`${environment.BASIC_URL}/permissions`);
+  }
+
+  updateRolePermissions(roleId: string, permissionIds: string[]): Observable<void> {
+    return this.http.put<void>(`${environment.BASIC_URL}/roles/${roleId}/permissions`, permissionIds);
+  }
+  }

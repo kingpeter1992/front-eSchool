@@ -8,12 +8,6 @@ export interface LoginRequest {
   email: string;
   password: string;
 }
-export interface Role {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-}
 
 export interface AuthResponse {
   token: string;
@@ -24,7 +18,6 @@ export interface AuthResponse {
 }
 
 export interface User {
-
   id: string;
 
   email: string;
@@ -35,11 +28,7 @@ export interface User {
 
   phone?: string;
 
-  status:
-    | 'PENDING_ACTIVATION'
-    | 'ACTIVE'
-    | 'SUSPENDED'
-    | 'LOCKED';
+  status: 'PENDING_ACTIVATION' | 'ACTIVE' | 'SUSPENDED' | 'LOCKED';
 
   schoolId?: string;
 
@@ -47,13 +36,12 @@ export interface User {
 
   schoolName?: string;
 
-  roles: string[];
+  roles: Role[];
 
-  permissions: string[];
+  permissions: Permission[];
 }
 
 export interface SchoolInfo {
-
   id: string;
 
   name: string;
@@ -84,4 +72,45 @@ export interface CreateUserDto {
   schoolId?: string;
   campusId?: string;
   roleSlugs: string[];
+}
+export interface School {
+  id: string;
+  name: string;
+}
+export interface Permission {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+}
+export interface Role {
+  id: string;
+  name: string;
+  slug: string;
+  system: boolean;
+  permissions: Permission[];
+}
+
+export interface AssignUserAccessDto {
+  userId: string;
+  roleIds: string[];
+  permissionIds: string[];
+}
+
+
+export interface ActivationContext {
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  schoolId?: string;
+}
+
+export interface CompleteActivationPayload {
+  token: string;
+  password: string;
+  phone?: string;
+  occupation?: string;
+  birthDate?: string;
+  matricule?: string;
 }
