@@ -12,9 +12,8 @@ export class ActivationService {
   private readonly baseUrl = `${environment.BASIC_URL}`;
 
   verifyToken(token: string): Observable<ActivationContext> {
-    return this.http.get<ActivationContext>(`${environment.BASIC_URL_VERIFY_TOTKEN}/?token=${token}`);
+    return this.http.get<ActivationContext>(`${environment.BASIC_URL_VERIFY_TOTKEN}?token=${token}`);
   }
-
   completeActivation(payload: CompleteActivationPayload): Observable<void> {
     return this.http.post<void>(`${environment.BASIC_URL_VERIFY_ACTIVATE}`, payload);
   }
