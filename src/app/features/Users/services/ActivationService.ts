@@ -9,7 +9,7 @@ import { environment } from "../../../env";
 })
 export class ActivationService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.BASIC_URL}/auth`;
+  private readonly baseUrl = `${environment.BASIC_URL}`;
 
   verifyToken(token: string): Observable<ActivationContext> {
     return this.http.get<ActivationContext>(`${this.baseUrl}/verify-activation-token?token=${token}`);
