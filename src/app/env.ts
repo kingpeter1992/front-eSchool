@@ -14,6 +14,8 @@ export const environment = {
 
    production: true,
    BASIC_URL: "https://hschool-ccb7.onrender.com/api/v1",
+   BASIC_URL_VERIFY_TOTKEN: "https://hschool-ccb7.onrender.com/api/auth/verify-activation-token",
+  BASIC_URL_VERIFY_ACTIVATE: "https://hschool-ccb7.onrender.com/api/auth/complete-activation",
    BASIC_URL_AUTH_LOGIN: "https://hschool-ccb7.onrender.com/api/auth/login",
   BASIC_URL_AUTH_ME: "https://hschool-ccb7.onrender.com/api/auth/me",
    BASIC_URL_REGISTER: "https://hschool-ccb7.onrender.com/api/auth/register",
