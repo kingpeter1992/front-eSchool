@@ -42,7 +42,7 @@ export class StorageService {
     }
 
     try {
-      console.log('user',JSON.parse(data) as AuthResponse)
+   //   console.log('user',JSON.parse(data) as AuthResponse)
       return JSON.parse(data) as AuthResponse;
 
     } catch {

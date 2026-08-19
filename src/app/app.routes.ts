@@ -11,6 +11,8 @@ export const routes: Routes = [
   { path: 'reset-password', loadComponent: () => import('./core/intros/pages/renitialisationpassword/renitialisationpassword.component').then(m => m.RenitialisationpasswordComponent) },
   { path: 'attente-validation', loadComponent: () => import('./core/intros/component/attennte-component/attennte-component').then(m => m.AttennteComponent) },
   { path: 'unauthorized', loadComponent: () => import('./core/intros/component/unauthorized/unauthorized').then(m => m.Unauthorized)},
+  { path: 'activate', loadComponent: () => import('./core/intros/pages/activate-component/activate-component').then(m => m.ActivateComponent)},
+
   /**
     * ROUTES SECURISEES AVEC LAYOUT
     */

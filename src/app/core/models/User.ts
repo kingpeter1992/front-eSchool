@@ -35,7 +35,7 @@ export interface User {
   campusId?: string;
 
   schoolName?: string;
-
+  school? : any
   roles: Role[];
 
   permissions: Permission[];

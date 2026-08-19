@@ -48,6 +48,7 @@ export class UserStore {
       next: (data) => {
         this._users.set(data);
         this._loading.set(false);
+        console.log('list users', data)
       },
       error: (err) => {
         this._loading.set(false);

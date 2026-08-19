@@ -51,8 +51,8 @@ export class AuthGuard implements CanActivate {
     // Récupération sécurisée des rôles depuis l'objet user
     const userRoles = authResponse.user.roles || [];
 
-    console.log('Allowed:', allowedRoles);
-    console.log('User roles:', userRoles);
+//    console.log('Allowed:', allowedRoles);
+ //   console.log('User roles:', userRoles);
 
     // Vérifie si l'utilisateur possède au moins l'un des rôles autorisés
     const hasRole = userRoles.some(
