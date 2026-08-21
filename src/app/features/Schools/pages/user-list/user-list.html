@@ -1,0 +1,238 @@
+<div class="dashboard-wrapper">
+
+  <!-- En-tête -->
+  <header class="dashboard-header">
+    <div>
+      <h1 class="page-title">Gestion des Utilisateurs</h1>
+      <p class="page-subtitle">Gérez les accès, rôles et affectations des comptes utilisateurs de votre établissement
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openUserModal()">
+        <i class="pi pi-user-plus"></i> Créer un Utilisateur
+      </button>
+    </div>
+  </header>
+
+  <!-- Section KPIs -->
+  <!-- Section KPIs -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon bg-blue-light text-blue"><i class="pi pi-users"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Total Utilisateurs</span>
+        <!-- Utilisation de la propriété du composant adaptée à la portée -->
+        <h3 class="kpi-value">{{ users.length }}</h3>
+        <span class="kpi-trend text-muted">Comptes enregistrés</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon bg-green-light text-green"><i class="pi pi-check-circle"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Comptes Actifs</span>
+        <!-- Utilisation du getter activeUsersCount -->
+        <h3 class="kpi-value">{{ activeUsersCount }}</h3>
+        <span class="kpi-trend text-green">Actifs dans le système</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon bg-purple-light text-purple"><i class="pi pi-shield"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Rôles Attribués</span>
+        <!-- Nombre de rôles applicables -->
+        <h3 class="kpi-value">{{ rolesCount }}</h3>
+        <span class="kpi-trend text-muted">Rôles disponibles</span>
+      </div>
+    </div>
+  </section>
+  <!-- Section principale : Liste des Utilisateurs -->
+  <section class="content-card">
+    <div class="card-header flex-between">
+      <div>
+        <h2 class="card-title">Utilisateurs et Rôles Attribués</h2>
+        <p class="card-subtitle">Liste détaillée des comptes et autorisations attribuées</p>
+      </div>
+      <div class="search-box">
+        <!-- APRÈS (avec parenthèses) -->
+        <input type="text" placeholder="Rechercher un utilisateur..." class="form-control"
+          [value]="userStore.searchQuery()" (input)="onSearchChange($event)" />
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Utilisateur</th>
+            <th>Établissement</th>
+            <th>Rôles Actuels</th>
+            <th>Statut</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of filteredUsers; track u.id) {
+          <tr>
+            <td>
+              <div class="user-info">
+                <span class="user-name">{{ u.firstName }} {{ u.lastName }}</span>
+                <span class="user-email">{{ u.email }}</span>
+              </div>
+            </td>
+            <td>{{ u.schoolName || 'Global / Non rattaché' }}</td>
+            <td>
+              <div class="badge-list">
+                @for (role of u.roles; track $index) {
+                <span class="badge badge-role">
+                  {{ role.name || role }}
+                </span>
+                }
+              </div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="{
+  'bg-green-light text-green': u.status === 'ACTIVE',
+  'bg-amber-light text-amber': u.status === 'PENDING_ACTIVATION',
+  'bg-red-light text-red': u.status === 'SUSPENDED' || u.status === 'LOCKED'
+}">
+                {{
+                u.status === 'ACTIVE' ? 'Actif' :
+                u.status === 'PENDING_ACTIVATION' ? 'En attente' :
+                u.status === 'SUSPENDED' ? 'Suspendu' : 'Verrouillé'
+                }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="btn-action" (click)="openAssignModal(u)">
+                <i class="pi pi-cog"></i> Affecter Accès
+              </button>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="5" class="text-center py-4 text-muted">
+              Aucun utilisateur trouvé.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- Modal : Création d'Utilisateur -->
+@if (isUserModalOpen()) {
+<div class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Nouveau compte utilisateur</h3>
+      <button class="btn-close" (click)="closeUserModal()">&times;</button>
+    </div>
+
+    <form [formGroup]="userForm" (ngSubmit)="submitUser()" class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Prénom</label>
+          <input type="text" formControlName="firstName" class="form-control" placeholder="Marc">
+        </div>
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" formControlName="lastName" class="form-control" placeholder="Alain">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Email professionnel</label>
+          <input type="email" formControlName="email" class="form-control" placeholder="m.alain@ecole.cd">
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="text" formControlName="phone" class="form-control" placeholder="+243 ...">
+        </div>
+      </div>
+      <!-- Sélection de l'école (Figée si Admin École) -->
+      <div class="form-group">
+        <label>Établissement / École Rattachée</label>
+        <select formControlName="schoolId" class="form-control">
+          <option value="">Sélectionner une école</option>
+          <option *ngFor="let school of schoolStore.schools()" [value]="school.id">
+            {{ school.name || school.code }}
+          </option>
+        </select>
+        <small *ngIf="isSchoolAdmin" class="text-muted">Établissement verrouillé sur votre école d'affectation.</small>
+      </div>
+
+      <!-- Sélection des rôles (Restreinte aux rôles École) -->
+      <div class="form-group">
+        <label>Rôles attribués</label>
+        <select formControlName="roleIds" multiple class="form-control select-multi">
+          @for (role of availableRoles; track role.id) {
+          <option [value]="role.id">{{ role.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeUserModal()">Annuler</button>
+        <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary">
+          Créer et Rattacher
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+}
+
+
+<!-- Modal 2 : Affectation des Rôles & Permissions -->
+<div *ngIf="isAssignModalOpen()" class="modal-overlay">
+  <div class="modal-card modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3>Affecter des Rôles & Permissions</h3>
+        <p class="text-subtitle" *ngIf="selectedUserForAssign()">
+          Cible : <strong>{{ selectedUserForAssign()?.firstName }} {{ selectedUserForAssign()?.lastName }}</strong> ({{
+          selectedUserForAssign()?.email }})
+        </p>
+      </div>
+      <button class="btn-close" (click)="closeAssignModal()">&times;</button>
+    </div>
+
+    <form [formGroup]="assignForm" (ngSubmit)="submitAssignments()" class="modal-body">
+      <!-- Choix des Rôles -->
+      <!-- Rôles filtrés également lors de l'affectation -->
+      <div class="form-group">
+        <label>Rôles de l'utilisateur :</label>
+        <select formControlName="roleIds" multiple class="form-control select-multi-lg">
+          <option *ngFor="let role of availableRoles" [value]="role.id">
+            {{ role.name }}
+          </option>
+        </select>
+        <span class="field-hint">Maintenez CTRL / CMD pour sélectionner plusieurs rôles</span>
+      </div>
+
+      <!-- Choix des Permissions Directes -->
+      <div class="form-group">
+        <label>Permissions Spécifiques (Surcharge Directe) :</label>
+        <select formControlName="permissionIds" multiple class="form-control select-multi-lg">
+          <option *ngFor="let perm of rbacStore.permissions()" [value]="perm.id">
+            {{ perm.name }} [{{ perm.slug }}]
+          </option>
+        </select>
+        <span class="field-hint">Permet d'accorder des permissions individuelles en plus des rôles</span>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeAssignModal()">Annuler</button>
+        <button type="submit" [disabled]="rbacStore.loading()" class="btn btn-primary">
+          {{ rbacStore.loading() ? 'Mise à jour...' : 'Appliquer les Modifications' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

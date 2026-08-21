@@ -26,9 +26,11 @@
     <!-- HEADER -->
     <header class="school-header">
       <div class="header-left">
-        <button class="back-button" type="button" (click)="goBack()" title="Retour">
-          <i class="pi pi-arrow-left"></i>
-        </button>
+        @if (isSuperAdmin()) {
+          <button class="back-button" type="button" (click)="goBack()" title="Retour">
+            <i class="pi pi-arrow-left"></i>
+          </button>
+        }
 
         <div class="school-logo-wrapper">
           <img [src]="school.logoUrl || 'assets/default-school.png'" alt="Logo école" class="school-logo" />
@@ -198,10 +200,11 @@
 
     <!-- TAB 2: CAMPUS -->
     @if (activeTab() === 'campuses') {
-      <div class="card">
-        <h2>Liste des Campus</h2>
-        <p>Affichage dynamique des campus...</p>
-      </div>
+      <app-campus-list
+        [campuses]="store.selectedSchool()?.campuses || []"
+        (openCreateModal)="handleOpenCreateCampusModal()"
+        (selectCampus)="handleCampusSelected($event)">
+      </app-campus-list>
     }
 
     <!-- TAB 3: ANNÉES SCOLAIRES -->
@@ -214,82 +217,83 @@
 
     <!-- TAB 4: UTILISATEURS -->
     @if (activeTab() === 'users') {
-      <div class="card">
-        <h2>Gestion des Utilisateurs</h2>
-        <p>Membres rattachés à l'année : <strong>{{ selectedAcademicYear() }}</strong></p>
+      <div class="tab-pane fade show active">
+        <app-user-list
+            [user]="storeUser.users() || []"
+            (openCreateUserModal)="handleOpenCreateUserModal()"
+            (selectUser)="handleUsersSelected($event)"
+        ></app-user-list>
       </div>
     }
 
   </div>
 
-  <!-- 🟢 MODAL DE MODIFICATION -->
- <!-- MODAL DE MODIFICATION -->
-<div *ngIf="isEditModalOpen()" class="modal-backdrop">
-  <div class="modal-card">
+  <!-- MODAL DE MODIFICATION -->
+  <div *ngIf="isEditModalOpen()" class="modal-backdrop">
+    <div class="modal-card">
 
-    <!-- Spinner Overlay lors de la soumission -->
-    <div *ngIf="isSubmitting()" class="modal-loader-overlay">
-      <div class="spinner"></div>
-      <span>Enregistrement en cours...</span>
+      <div *ngIf="isSubmitting()" class="modal-loader-overlay">
+        <div class="spinner"></div>
+        <span>Enregistrement en cours...</span>
+      </div>
+
+      <div class="modal-header">
+        <h2 class="modal-title">
+          {{ isEditMode() ? 'Modifier l\'Établissement' : 'Créer un Établissement' }}
+        </h2>
+        <button (click)="closeModal()" class="close-btn" [disabled]="isSubmitting()">&times;</button>
+      </div>
+
+      <form [formGroup]="schoolForm" (ngSubmit)="saveSchool()" class="form-layout">
+
+        <div class="logo-upload-group">
+          <div class="logo-preview">
+            <img *ngIf="logoPreviewUrl()" [src]="logoPreviewUrl()" alt="Preview">
+            <span *ngIf="!logoPreviewUrl()">Logo</span>
+          </div>
+          <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input">
+        </div>
+
+        <div class="form-field">
+          <label>Nom Officiel</label>
+          <input formControlName="name" type="text" placeholder="Ex: Complexe Scolaire Alpha">
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Email</label>
+            <input formControlName="email" type="email" placeholder="contact@alpha.com">
+          </div>
+          <div class="form-field">
+            <label>Téléphone</label>
+            <input formControlName="phone" type="text" placeholder="+243 ...">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Devise</label>
+            <input formControlName="currency" type="text" placeholder="USD / EUR">
+          </div>
+          <div class="form-field">
+            <label>Sous-domaine</label>
+            <input formControlName="domain" type="text" placeholder="alpha.eschool.com">
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeModal()" [disabled]="isSubmitting()" class="btn btn-secondary">
+            Annuler
+          </button>
+          <button type="submit" [disabled]="schoolForm.invalid || isSubmitting()" class="btn btn-primary">
+            <span *ngIf="!isSubmitting()">Enregistrer</span>
+            <span *ngIf="isSubmitting()" class="btn-spinner-text">
+              <i class="pi pi-spin pi-spinner"></i> Patientez...
+            </span>
+          </button>
+        </div>
+
+      </form>
     </div>
-
-    <div class="modal-header">
-      <h2 class="modal-title">
-        {{ isEditMode() ? 'Modifier l\'Établissement' : 'Créer un Établissement' }}
-      </h2>
-      <button (click)="closeModal()" class="close-btn" [disabled]="isSubmitting()">&times;</button>
-    </div>
-
-    <form [formGroup]="schoolForm" (ngSubmit)="saveSchool()" class="form-layout">
-
-      <div class="logo-upload-group">
-        <div class="logo-preview">
-          <img *ngIf="logoPreviewUrl()" [src]="logoPreviewUrl()" alt="Preview">
-          <span *ngIf="!logoPreviewUrl()">Logo</span>
-        </div>
-        <input type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input">
-      </div>
-
-      <div class="form-field">
-        <label>Nom Officiel</label>
-        <input formControlName="name" type="text" placeholder="Ex: Complexe Scolaire Alpha">
-      </div>
-
-      <div class="form-row">
-        <div class="form-field">
-          <label>Email</label>
-          <input formControlName="email" type="email" placeholder="contact@alpha.com">
-        </div>
-        <div class="form-field">
-          <label>Téléphone</label>
-          <input formControlName="phone" type="text" placeholder="+243 ...">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-field">
-          <label>Devise</label>
-          <input formControlName="currency" type="text" placeholder="USD / EUR">
-        </div>
-        <div class="form-field">
-          <label>Sous-domaine</label>
-          <input formControlName="domain" type="text" placeholder="alpha.eschool.com">
-        </div>
-      </div>
-
-      <div class="modal-actions">
-        <button type="button" (click)="closeModal()" [disabled]="isSubmitting()" class="btn btn-secondary">
-          Annuler
-        </button>
-        <button type="submit" [disabled]="schoolForm.invalid || isSubmitting()" class="btn btn-primary">
-          <span *ngIf="!isSubmitting()">Enregistrer</span>
-          <span *ngIf="isSubmitting()" class="btn-spinner-text">
-            <i class="pi pi-spin pi-spinner"></i> Patientez...
-          </span>
-        </button>
-      </div>
-
-    </form>
   </div>
-</div>
 }

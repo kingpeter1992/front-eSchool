@@ -11,6 +11,15 @@ export interface CampusResponse {
   name: string;
   address?: string;
   phone?: string;
+  city?:string;
+  province?:string;
+  country?:string;
+  status?: CampusStatus; // 👈 Typage explicite (évite le type 'any')
+}
+
+export enum CampusStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE'
 }
 
 export interface SchoolResponse {

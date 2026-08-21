@@ -1,0 +1,205 @@
+$primary-color: #2563eb;
+$border-color: #e2e8f0;
+
+.dashboard-wrapper {
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+  .page-subtitle {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0.25rem 0 0;
+  }
+}
+
+/* KPI Cards Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+
+  .kpi-card {
+    background: #ffffff;
+    border: 1px solid $border-color;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .kpi-label { font-size: 0.75rem; color: #64748b; display: block; }
+    .kpi-value { font-size: 1.25rem; font-weight: 700; margin: 0; color: #0f172a; }
+    .kpi-trend { font-size: 0.75rem; }
+  }
+}
+
+/* Badges / Palette Couleurs */
+.bg-blue-light { background-color: #dbeafe; } .text-blue { color: #1d4ed8; }
+.bg-purple-light { background-color: #f3e8ff; } .text-purple { color: #6b21a8; }
+.bg-green-light { background-color: #dcfce7; } .text-green { color: #15803d; }
+.bg-gray-light { background-color: #f1f5f9; }
+
+.badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  &.badge-role {
+    background-color: #e2e8f0;
+    color: #334155;
+  }
+}
+
+/* Section Carte & Tableaux */
+.content-card {
+  background: #ffffff;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 1.25rem;
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    &.flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  .card-title { font-size: 1.125rem; font-weight: 600; margin: 0; color: #0f172a; }
+  .card-subtitle { font-size: 0.85rem; color: #64748b; margin: 0; }
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $border-color;
+    text-align: left;
+    font-size: 0.875rem;
+  }
+
+  th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+  }
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  .user-name { font-weight: 600; color: #0f172a; }
+  .user-email { font-size: 0.75rem; color: #64748b; }
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  padding: 1.5rem;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    h3 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+    .btn-close { border: none; background: transparent; font-size: 1.25rem; cursor: pointer; }
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+  label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; color: #334155; }
+  .form-control { width: 100%; padding: 0.5rem; border: 1px solid $border-color; border-radius: 4px; box-sizing: border-box; }
+}
+
+/* Boutons */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+
+  &-primary { background-color: $primary-color; color: #fff; }
+  &-secondary { background-color: #e2e8f0; color: #334155; }
+}
+
+.btn-action {
+  background: transparent;
+  border: 1px solid $border-color;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: #475569;
+
+  &:hover { background-color: #f1f5f9; }
+}

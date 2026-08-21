@@ -1,3 +1,5 @@
+import { SchoolResponse } from "../../features/Schools/models/school.model";
+
 export interface Permission {
   id: string;
   name: string;
@@ -13,7 +15,7 @@ export interface AuthResponse {
   token: string;
   refreshToken?: string;
   user: User;
-  school?: SchoolInfo;
+  school?: SchoolResponse;
   permissions: string[];
 }
 

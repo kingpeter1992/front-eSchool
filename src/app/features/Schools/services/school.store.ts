@@ -1,15 +1,17 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { SchoolService } from '../services/school.service';
 import { SchoolResponse, SchoolRequest, SchoolStatus } from '../models/school.model';
-import { tap, catchError, of, Observable, finalize, EMPTY, map } from 'rxjs';
+import { tap, catchError, of, Observable, finalize, EMPTY, map, throwError } from 'rxjs';
 import { Toast } from '../../../shared/toaste/Toast';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SchoolStore {
+
   private readonly schoolService = inject(SchoolService);
   private readonly toast = inject(Toast);
+
 
   // ==============================
   // STATE
@@ -69,13 +71,10 @@ export class SchoolStore {
   // ==============================
 
 loadSchools(forceRefresh = false): Observable<SchoolResponse[]> {
-
   if (this._isInitialized() && !forceRefresh) {
     return of(this._schools());
   }
-
   this._isLoading.set(true);
-
   return this.fetchAndSync().pipe(
     finalize(() => {
       this._isLoading.set(false);
@@ -177,18 +176,13 @@ private fetchAndSync(): Observable<SchoolResponse[]> {
       .getById(id)
       .pipe(
         tap((school) => {
-          console.log('École récupérée :', school);
-
           this._selectedSchool.set(school);
+          console.log('ecole', school)
         }),
-
         catchError((error) => {
-          console.error('Erreur chargement école :', error);
-
           this._schoolError.set(
             error?.error?.message ?? 'Impossible de récupérer les informations de cette école.',
           );
-
           return EMPTY;
         }),
 
@@ -198,4 +192,37 @@ private fetchAndSync(): Observable<SchoolResponse[]> {
       )
       .subscribe();
   }
+
+// ==============================
+// GET MY SCHOOL
+// ==============================
+
+loadMySchool(school: SchoolResponse): Observable<SchoolResponse> {
+
+  if (!school) {
+    return throwError(
+      () => new Error(
+        "Aucune école n'est associée à l'utilisateur connecté"
+      )
+    );
+  }
+
+  this._isLoadingSchool.set(true);
+  this._schoolError.set(null);
+
+  return of(school).pipe(
+    tap((school) => {
+      this._selectedSchool.set(school);
+
+      console.log(
+        '🏫 École de l’utilisateur connecté :',
+        school
+      );
+    }),
+    finalize(() => {
+      this._isLoadingSchool.set(false);
+    })
+  );
+}
+
 }

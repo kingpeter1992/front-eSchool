@@ -8,10 +8,10 @@ export const environment = {
   BASIC_URL_REGISTER: "http://127.0.0.1:8082/api/auth/register",
   BASIC_URL_FORGOT: "http://127.0.0.1:8082/api/auth/forgot-password",
   BASIC_URL_RENITIALISATION: "http://127.0.0.1:8082/api/auth/reset-password",
-  BASIC_URL_ADMIN: "http://127.0.0.1:8082/api/admin"
+  BASIC_URL_ADMIN: "http://127.0.0.1:8082/api/admin",
+  BASIC_URL_VERIFY_TOTKEN: "http://127.0.0.1:8082/api/auth/verify-activation-token",
+  BASIC_URL_VERIFY_ACTIVATE: "http://127.0.0.1:8082/api/auth/complete-activation",
 */
-
-
    production: true,
    BASIC_URL: "https://hschool-ccb7.onrender.com/api/v1",
    BASIC_URL_VERIFY_TOTKEN: "https://hschool-ccb7.onrender.com/api/auth/verify-activation-token",

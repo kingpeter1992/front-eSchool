@@ -72,6 +72,12 @@ export class MainLayout implements OnInit {
       route: '/dashboard',
       roles: ['ROLE_SUPER_ADMIN']
     },
+     {
+      label: 'Tableau de bord',
+      icon: 'pi pi-chart-pie',
+      route: '/admin_ecole',
+      roles: ['ROLE_ADMIN_ECOLE']
+    },
     {
       label: 'Administration eSchool',
       icon: 'pi pi-cog',
@@ -145,7 +151,34 @@ export class MainLayout implements OnInit {
       icon: 'pi pi-comments',
       route: '/communications',
       roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT', 'ROLE_PARENT']
-    }
+    },
+    {
+      label: 'Gestion users',
+      icon: 'pi pi-cog',
+      roles: ['ROLE_ADMIN_ECOLE'],
+      children: [
+        {
+          label: 'Utilisateurs',
+          icon: 'pi pi-users',
+          route: 'admin/users',
+          roles: ['ROLE_ADMIN_ECOLE'],
+        },
+
+        {
+          label: 'Mon ecole',
+          icon: 'pi pi-building',
+          route: 'admin/schools',
+      roles: ['ROLE_ADMIN_ECOLE'],
+        },
+        {
+          label: 'Mon abonement',
+          icon: 'pi pi-shield',
+          route: 'admin/subscription',
+      roles: ['ROLE_ADMIN_ECOLE'],
+        },
+
+      ]
+    },
   ];
 
   // Menu filtré dynamiquement selon les rôles de l'utilisateur

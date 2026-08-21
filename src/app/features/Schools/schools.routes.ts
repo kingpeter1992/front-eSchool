@@ -9,10 +9,10 @@ export const SCHOOLS_ROUTES: Routes = [
   {
     path: ':id', // ➔ Ne pas remettre 'schools/:id' ici car il hérite déjà du parent 'schools'
     loadComponent: () =>
-      import('./pages/details-school/details-school').then((m) => m.DetailsSchool),
+      import('./admin-school/details-school/details-school').then((m) => m.DetailsSchool),
   },
 
-  
+
 
 
 ];

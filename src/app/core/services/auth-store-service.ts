@@ -1,16 +1,24 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { switchMap, map, finalize } from 'rxjs/operators';
-import { AuthResponse, Role, LoginRequest, CreateUserDto } from '../models/User';
+import {
+  AuthResponse,
+  Role,
+  LoginRequest,
+  CreateUserDto,
+  School,
+  SchoolInfo,
+} from '../models/User';
 import { StorageService } from '../storage-service/storage-service';
 import { AppInitializerStore } from './AppInitializerStore';
 import { AuthService } from './auth-service';
 import { RbacStore } from './RbacStore';
 import { SplashStore } from './SplashStore';
 import { Toast } from '../../shared/toaste/Toast';
+import { SchoolResponse } from '../../features/Schools/models/school.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthStoreService {
   private readonly service = inject(AuthService);
@@ -20,6 +28,9 @@ export class AuthStoreService {
   private readonly initializer = inject(AppInitializerStore);
   private readonly splash = inject(SplashStore);
   private readonly rbacStore = inject(RbacStore);
+
+  private readonly _currentSchool = signal<SchoolResponse | null>(null);
+  readonly currentSchool = this._currentSchool.asReadonly();
 
   private readonly _user = signal<AuthResponse | null>(this.storage.getUser());
   private readonly _loading = signal<boolean>(false);
@@ -52,11 +63,14 @@ export class AuthStoreService {
         switchMap((response) => {
           this.storage.saveAuth(response);
           this._user.set(response);
-          return this.initializer.initialize().pipe(map(() => response));
+
+          return this.initializer
+            .initialize(response.user.roles, response.school, response.permissions)
+            .pipe(map(() => response));
         }),
         finalize(() => {
           this._loading.set(false);
-        })
+        }),
       )
       .subscribe({
         next: (response) => {
@@ -69,19 +83,21 @@ export class AuthStoreService {
           const message = err?.error?.message ?? 'Identifiants incorrects.';
           this._error.set(message);
           this.toast.error(message);
-        }
+        },
       });
   }
 
   logout(): void {
     this.storage.clean();
-    this.rbacStore.clearCache();
+    //    this.rbacStore.clearCache();
     this._user.set(null);
     this.router.navigate(['/login']);
   }
 
   hasRole(role: string): boolean {
-    const userRoles = this.roles().map(r => typeof r === 'string' ? r : r.id || r.slug || r.name);
+    const userRoles = this.roles().map((r) =>
+      typeof r === 'string' ? r : r.id || r.slug || r.name,
+    );
     return userRoles.includes(role);
   }
 
@@ -94,26 +110,29 @@ export class AuthStoreService {
     this._error.set(null);
     this.splash.show('Inscription en cours...');
 
-    this.service.register(payload).pipe(
-      finalize(() => {
-        this._loading.set(false);
-        this.splash.hide();
-      })
-    ).subscribe({
-      next: () => {
-        this.toast.success('Compte créé avec succès ! Veuillez vous connecter.');
-        this.router.navigate(['/login']);
-      },
-      error: (err) => {
-        const message = err?.error?.message ?? 'Une erreur est survenue lors de l\'inscription.';
-        this._error.set(message);
-        this.toast.error(message);
-      }
-    });
+    this.service
+      .register(payload)
+      .pipe(
+        finalize(() => {
+          this._loading.set(false);
+          this.splash.hide();
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.toast.success('Compte créé avec succès ! Veuillez vous connecter.');
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          const message = err?.error?.message ?? "Une erreur est survenue lors de l'inscription.";
+          this._error.set(message);
+          this.toast.error(message);
+        },
+      });
   }
 
   private redirectBasedOnRoles(roles: (Role | string)[]): void {
-    const roleKeys = roles.map(r => typeof r === 'string' ? r : r.id || r.slug || r.name);
+    const roleKeys = roles.map((r) => (typeof r === 'string' ? r : r.id || r.slug || r.name));
 
     if (roleKeys.includes('ROLE_SUPER_ADMIN') || roleKeys.includes('SUPER_ADMIN')) {
       this.router.navigate(['/dashboard']);

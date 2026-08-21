@@ -25,7 +25,7 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         canActivate: [AuthGuard],
-        data: { roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE'] },
+        data: { roles: ['ROLE_SUPER_ADMIN'] },
         loadComponent: () =>
           import('./Admin/pages/admin-dashboard/admin-dashboard')
             .then(m => m.AdminDashboard)
@@ -36,7 +36,14 @@ export const routes: Routes = [
         canActivate: [AuthGuard],
         data: { roles: ['ROLE_SUPER_ADMIN'] },
         loadChildren: () => import('./Admin/admin.routes').then(m => m.ADMIN_ROUTES)
-      }
+      },
+        {
+          path: 'admin_ecole',
+          canActivate: [AuthGuard],
+          data: { roles: ['ROLE_ADMIN_ECOLE'] },
+          loadChildren: () => import('./features/admin-ecole.routes').then(m => m.ADMIN_SCHOOLS_ROUTES)
+        }
+
     ]
   },
   {

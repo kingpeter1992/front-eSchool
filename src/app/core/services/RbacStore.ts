@@ -3,13 +3,15 @@ import { Observable, tap, of, catchError, forkJoin } from 'rxjs';
 import { Role, Permission, CreateUserDto, AssignUserAccessDto } from '../models/User';
 import { Toast } from '../../shared/toaste/Toast';
 import { RbacService } from './rbacService';
+import { AuthStoreService } from './auth-store-service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RbacStore {
 
-private readonly rbacService = inject(RbacService);
+
+  private readonly rbacService = inject(RbacService);
   private readonly toast = inject(Toast);
 
   private readonly _roles = signal<Role[]>([]);
@@ -119,6 +121,23 @@ private readonly rbacService = inject(RbacService);
       },
     });
   }
+
+MyloadRbacCache(
+  roles: (Role | string)[],
+  permissions: string[]
+): Observable<{
+  roles: (Role | string)[];
+  permissions: string[];
+}> {
+
+  console.log('🔐 Rôles utilisateur :', roles);
+  console.log('🔑 Permissions utilisateur :', permissions);
+
+  return of({
+    roles,
+    permissions,
+  });
+}
 
   clearCache(): void {
     this._roles.set([]);

@@ -1,0 +1,503 @@
+@use '../../../../../styles/variables' as *;
+
+.dashboard-container {
+  min-height: 100%;
+  padding: 2rem;
+  background: $bg-app;
+  color: $text-main;
+}
+
+
+/* ========================================
+   HEADER
+======================================== */
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  .page-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $text-main;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: $text-muted;
+    font-size: 0.9rem;
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+
+  background: $primary-color;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 8px;
+
+  padding: 0.7rem 1.1rem;
+
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    background: $primary-hover;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.2);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+
+/* ========================================
+   KPI GRID
+======================================== */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+
+  margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  min-height: 110px;
+
+  padding: 1.25rem;
+
+  background: $bg-surface;
+
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+
+  box-shadow: $shadow-card;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+
+.kpi-icon {
+  flex-shrink: 0;
+
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  font-size: 1.2rem;
+
+  &.blue {
+    background: rgba(37, 99, 235, 0.1);
+    color: $primary-color;
+  }
+
+  &.green {
+    background: rgba(22, 163, 74, 0.1);
+    color: $success-color;
+  }
+
+  &.orange {
+    background: rgba(217, 119, 6, 0.1);
+    color: $warning-color;
+  }
+
+  &.purple {
+    background: rgba(147, 51, 234, 0.1);
+    color: #9333ea;
+  }
+}
+
+
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  min-width: 0;
+
+  .label {
+    color: $text-muted;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .value {
+    margin: 0;
+
+    color: $text-main;
+
+    font-size: 1.65rem;
+    font-weight: 700;
+
+    line-height: 1.2;
+  }
+}
+
+
+/* ========================================
+   MAIN GRID
+======================================== */
+
+.dashboard-grid {
+  display: grid;
+
+  grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr);
+
+  gap: 1.5rem;
+
+  align-items: start;
+}
+
+
+/* ========================================
+   CARDS
+======================================== */
+
+.card-box {
+  background: $bg-surface;
+
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+
+  padding: 1.5rem;
+
+  box-shadow: $shadow-card;
+
+  overflow: hidden;
+}
+
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  margin-bottom: 1.25rem;
+
+  h3 {
+    margin: 0;
+
+    color: $text-main;
+
+    font-size: 1.05rem;
+    font-weight: 650;
+  }
+
+  p {
+    margin: 0.3rem 0 0;
+
+    color: $text-muted;
+
+    font-size: 0.82rem;
+  }
+}
+
+
+/* ========================================
+   TABLE
+======================================== */
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.erp-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  font-size: 0.875rem;
+
+  th {
+    padding: 0.8rem 1rem;
+
+    text-align: left;
+
+    color: $text-muted;
+
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    background: rgba(148, 163, 184, 0.05);
+
+    border-bottom: 1px solid $border-color;
+  }
+
+  td {
+    padding: 1rem;
+
+    color: $text-main;
+
+    border-bottom: 1px solid $border-color;
+
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: rgba(37, 99, 235, 0.025);
+    }
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+
+.text-right {
+  text-align: right !important;
+}
+
+
+/* ========================================
+   BADGES
+======================================== */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 0.3rem 0.65rem;
+
+  border-radius: 999px;
+
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &-system {
+    background: rgba(37, 99, 235, 0.1);
+    color: $primary-color;
+  }
+
+  &-custom {
+    background: rgba(217, 119, 6, 0.1);
+    color: $warning-color;
+  }
+}
+
+
+/* ========================================
+   USER CELL
+======================================== */
+
+.user-cell {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.2rem;
+
+  .user-name {
+    color: $text-main;
+    font-weight: 600;
+  }
+
+  .user-email {
+    color: $text-muted;
+    font-size: 0.78rem;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    max-width: 200px;
+  }
+}
+
+
+/* ========================================
+   STATUS
+======================================== */
+
+.status-cell {
+  display: flex;
+  align-items: center;
+
+  gap: 0.5rem;
+}
+
+.status-dot {
+  flex-shrink: 0;
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: $secondary-color;
+
+  &.active {
+    background: $success-color;
+  }
+
+  &.pending_activation {
+    background: $warning-color;
+  }
+
+  &.inactive {
+    background: $secondary-color;
+  }
+
+  &.suspended {
+    background: $danger-color;
+  }
+}
+
+
+/* ========================================
+   ACTIONS
+======================================== */
+
+.btn-link {
+  padding: 0;
+
+  background: transparent;
+  border: none;
+
+  color: $primary-color;
+
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  &:hover {
+    color: $primary-hover;
+    text-decoration: underline;
+  }
+}
+
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: $text-muted;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    background: rgba(37, 99, 235, 0.08);
+    color: $primary-color;
+  }
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1200px) {
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 768px) {
+
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+
+    .header-actions {
+      width: 100%;
+    }
+
+    .btn-primary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .card-box {
+    padding: 1rem;
+  }
+
+  .erp-table {
+
+    th,
+    td {
+      padding: 0.8rem 0.7rem;
+    }
+  }
+}

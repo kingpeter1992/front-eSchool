@@ -24,8 +24,6 @@ getAllSchools(status?: SchoolStatus): Observable<SchoolResponse[]> {
 
   return this.http.get<SchoolResponse[]>(this.apiUrl, { params }).pipe(
     tap((response) => {
-      console.log('🔎 RESPONSE GET ALL SCHOOLS:', response);
-      console.log('🔎 EST ARRAY ?', Array.isArray(response));
     })
   );
 }
