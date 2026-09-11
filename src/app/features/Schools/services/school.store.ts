@@ -177,7 +177,6 @@ private fetchAndSync(): Observable<SchoolResponse[]> {
       .pipe(
         tap((school) => {
           this._selectedSchool.set(school);
-          console.log('ecole', school)
         }),
         catchError((error) => {
           this._schoolError.set(

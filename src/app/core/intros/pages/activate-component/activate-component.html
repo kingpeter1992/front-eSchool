@@ -28,14 +28,14 @@
         <!-- SECTION : DÉTAILS DU RÔLE -->
         <div class="role-section" *ngIf="store.userRole()">
 
-          <!-- SUPER ADMIN / ADMIN / DIRECTEUR -->
+          <!-- SUPER ADMIN / ADMIN / DIRECTEUR
           <div *ngIf="['ROLE_SUPER_ADMIN', 'ROLE_ADMIN', 'ROLE_DIRECTEUR'].includes(store.userRole())">
             <span class="role-badge">Administration</span>
             <div class="form-group">
               <label>Matricule / Identifiant</label>
               <input type="text" formControlName="matricule" class="form-control" placeholder="Ex: DIR-2026-X" />
             </div>
-          </div>
+          </div> -->
 
           <!-- PARENT -->
           <div *ngIf="store.userRole() === 'ROLE_PARENT'">

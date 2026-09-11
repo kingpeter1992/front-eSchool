@@ -1,0 +1,47 @@
+<div class="schedule-card">
+      <div class="card-header-modern">
+        <div class="header-title-group">
+          <div class="header-icon-box">
+            <i class="pi pi-clock"></i>
+          </div>
+          <div>
+            <h3>Horaires & Vacations</h3>
+            <p>Planning d'ouverture et créneaux des vacations du campus</p>
+          </div>
+        </div>
+        @if (canEdit()) {
+          <button type="button" class="btn-action-edit" (click)="openScheduleModal.emit()">
+            <i class="pi pi-pencil"></i>
+            <span>Configurer</span>
+          </button>
+        }
+      </div>
+
+      <div class="schedule-grid">
+        @for (s of schedules(); track s.dayOfWeek) {
+          <div class="schedule-row" [class.closed-day]="!s.isOpen">
+            <div class="day-badge">
+              <span class="day-indicator"></span>
+              <span>{{ getDayLabel(s.dayOfWeek) }}</span>
+            </div>
+
+            @if (s.isOpen) {
+              <div class="vacations-wrapper">
+                <div class="vacation-pill morning">
+                  <i class="pi pi-sun"></i>
+                  <span>Matin: <strong>{{ s.morningStartTime || '--:--' }} - {{ s.morningEndTime || '--:--' }}</strong></span>
+                </div>
+                <div class="vacation-pill evening">
+                  <i class="pi pi-moon"></i>
+                  <span>Soir: <strong>{{ s.eveningStartTime || '--:--' }} - {{ s.eveningEndTime || '--:--' }}</strong></span>
+                </div>
+              </div>
+            } @else {
+              <span class="badge-closed-tag">
+                <i class="pi pi-lock"></i> Fermé
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </div>

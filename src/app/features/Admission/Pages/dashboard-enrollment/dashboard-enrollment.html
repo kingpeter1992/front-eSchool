@@ -1,0 +1,552 @@
+<div class="enrollment-page">
+
+  <!-- ========================================================= -->
+  <!-- HEADER -->
+  <!-- ========================================================= -->
+
+  <header class="page-header">
+
+    <div class="header-left">
+
+      <div class="header-icon">
+        <i class="bi bi-person-vcard"></i>
+      </div>
+
+      <div>
+
+        <div class="title-line">
+
+          <h1>
+            Inscriptions & Admissions
+          </h1>
+
+          <span class="count-badge">
+            {{ store.total() }}
+          </span>
+
+        </div>
+
+        <p>
+          Gérez les candidatures, admissions et inscriptions
+          des élèves.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <button
+      class="btn-primary"
+      (click)="newEnrollment()">
+
+      <i class="bi bi-plus-lg"></i>
+
+      Nouvelle inscription
+
+    </button>
+
+  </header>
+
+
+  <!-- ========================================================= -->
+  <!-- KPI -->
+  <!-- ========================================================= -->
+
+  <section class="kpi-grid">
+
+    <!-- TOTAL -->
+
+    <article class="kpi-card total">
+
+      <div class="kpi-icon">
+        <i class="bi bi-people"></i>
+      </div>
+
+      <div>
+
+        <span>
+          Total dossiers
+        </span>
+
+        <strong>
+          {{ store.total() }}
+        </strong>
+
+        <small>
+          Toutes les candidatures
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <!-- PENDING -->
+
+    <article class="kpi-card pending">
+
+      <div class="kpi-icon">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+
+      <div>
+
+        <span>
+          En attente
+        </span>
+
+        <strong>
+          {{ store.pending() }}
+        </strong>
+
+        <small>
+          À traiter
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <!-- REVIEWING -->
+
+    <article class="kpi-card reviewing">
+
+      <div class="kpi-icon">
+        <i class="bi bi-search"></i>
+      </div>
+
+      <div>
+
+        <span>
+          En examen
+        </span>
+
+        <strong>
+          {{ store.reviewing() }}
+        </strong>
+
+        <small>
+          Dossiers en cours
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <!-- ACCEPTED -->
+
+    <article class="kpi-card accepted">
+
+      <div class="kpi-icon">
+        <i class="bi bi-check-circle"></i>
+      </div>
+
+      <div>
+
+        <span>
+          Acceptés
+        </span>
+
+        <strong>
+          {{ store.accepted() }}
+        </strong>
+
+        <small>
+          Admissions validées
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <!-- ENROLLED -->
+
+    <article class="kpi-card enrolled">
+
+      <div class="kpi-icon">
+        <i class="bi bi-person-check"></i>
+      </div>
+
+      <div>
+
+        <span>
+          Inscrits
+        </span>
+
+        <strong>
+          {{ store.enrolled() }}
+        </strong>
+
+        <small>
+          Élèves officiellement inscrits
+        </small>
+
+      </div>
+
+    </article>
+
+
+    <!-- REJECTED -->
+
+    <article class="kpi-card rejected">
+
+      <div class="kpi-icon">
+        <i class="bi bi-x-circle"></i>
+      </div>
+
+      <div>
+
+        <span>
+          Rejetés
+        </span>
+
+        <strong>
+          {{ store.rejected() }}
+        </strong>
+
+        <small>
+          Candidatures refusées
+        </small>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <!-- ========================================================= -->
+  <!-- FILTER -->
+  <!-- ========================================================= -->
+
+  <section class="filter-card">
+
+    <div class="search-box">
+
+      <i class="bi bi-search"></i>
+
+      <input
+        type="text"
+        placeholder="Rechercher un élève, matricule, campus ou classe..."
+        [value]="searchTerm()"
+        (input)="onSearchChange($event)"
+      />
+
+    </div>
+
+
+    <div class="filter-select">
+
+      <i class="bi bi-funnel"></i>
+
+      <select
+        [value]="statusFilter()"
+        (change)="onStatusChange($event)">
+
+        <option value="ALL">
+          Tous les statuts
+        </option>
+
+        <option value="PENDING">
+          En attente
+        </option>
+
+        <option value="REVIEWING">
+          En examen
+        </option>
+
+        <option value="ACCEPTED">
+          Acceptés
+        </option>
+
+        <option value="ENROLLED">
+          Inscrits
+        </option>
+
+        <option value="REJECTED">
+          Rejetés
+        </option>
+
+      </select>
+
+    </div>
+
+  </section>
+
+
+  <!-- ========================================================= -->
+  <!-- RESULT HEADER -->
+  <!-- ========================================================= -->
+
+  <div class="results-header">
+
+    <div>
+
+      <h2>
+        Dossiers d'inscription
+      </h2>
+
+      <span>
+        {{ filteredEnrollments().length }}
+        dossier(s)
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- ========================================================= -->
+  <!-- TABLE -->
+  <!-- ========================================================= -->
+
+  <section class="table-card">
+
+    @if (store.loading()) {
+
+      <div class="loading-state">
+
+        <i class="bi bi-arrow-repeat spin"></i>
+
+        <span>
+          Chargement des inscriptions...
+        </span>
+
+      </div>
+
+    }
+
+    @else if (filteredEnrollments().length > 0) {
+
+      <div class="table-responsive">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>ÉLÈVE</th>
+
+              <th>MATRICULE</th>
+
+              <th>CAMPUS</th>
+
+              <th>CLASSE</th>
+
+              <th>ANNÉE SCOLAIRE</th>
+
+              <th>STATUT</th>
+
+              <th class="text-end">
+                ACTION
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            @for (
+              enrollment of filteredEnrollments();
+              track enrollment.id
+            ) {
+
+              <tr
+                class="clickable-row"
+                (click)="viewDetails(enrollment)"
+              >
+
+                <!-- ELEVE -->
+
+                <td>
+
+                  <div class="student-cell">
+
+                    <div class="student-avatar">
+
+                      <i class="bi bi-person"></i>
+
+                    </div>
+
+                    <div>
+
+                      <strong>
+                        {{ enrollment.studentName || 'Élève non renseigné' }}
+                      </strong>
+
+                      @if (enrollment.studentEmail) {
+
+                        <small>
+                          {{ enrollment.studentEmail }}
+                        </small>
+
+                      }
+
+                    </div>
+
+                  </div>
+
+                </td>
+
+
+                <!-- MATRICULE -->
+
+                <td>
+
+                  @if (enrollment.registrationNo) {
+
+                    <span class="registration-number">
+
+                      {{ enrollment.registrationNo }}
+
+                    </span>
+
+                  }
+                  @else {
+
+                    <span class="not-assigned">
+                      Non attribué
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- CAMPUS -->
+
+                <td>
+
+                  <span class="data-with-icon">
+
+                    <i class="bi bi-building"></i>
+
+                    {{ enrollment.campusName || '—' }}
+
+                  </span>
+
+                </td>
+
+
+                <!-- CLASSE -->
+
+                <td>
+
+                  @if (enrollment.className) {
+
+                    <span class="class-badge">
+
+                      {{ enrollment.className }}
+
+                    </span>
+
+                  }
+                  @else {
+
+                    <span class="not-assigned">
+                      Non affecté
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <!-- ANNEE -->
+
+                <td>
+
+                  {{ enrollment.academicYearName || '—' }}
+
+                </td>
+
+
+                <!-- STATUS -->
+
+                <td>
+
+                  <span
+                    class="status-badge"
+                    [ngClass]="'status-' + enrollment.status.toLowerCase()"
+                  >
+
+                    <span class="status-dot"></span>
+
+                    {{ getStatusLabel(enrollment.status) }}
+
+                  </span>
+
+                </td>
+
+
+                <!-- ACTION -->
+
+                <td class="action-cell">
+
+                  <button
+                    type="button"
+                    class="btn-view"
+                    (click)="viewDetails(enrollment); $event.stopPropagation()"
+                    title="Voir les détails"
+                  >
+
+                    <i class="bi bi-arrow-right"></i>
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    }
+    @else {
+
+      <div class="empty-state">
+
+        <div class="empty-icon">
+
+          <i class="bi bi-person-vcard"></i>
+
+        </div>
+
+        <h3>
+          Aucun dossier trouvé
+        </h3>
+
+        <p>
+          Aucun dossier d'inscription ne correspond
+          aux critères sélectionnés.
+        </p>
+
+        <button
+          class="btn-primary"
+          (click)="newEnrollment()">
+
+          <i class="bi bi-plus-lg"></i>
+
+          Nouvelle inscription
+
+        </button>
+
+      </div>
+
+    }
+
+  </section>
+
+</div>

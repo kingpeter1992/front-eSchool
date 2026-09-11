@@ -2,6 +2,8 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { UserService } from '../services/user.service'; // Adaptez le chemin d'accès
 import { Toast } from '../../../shared/toaste/Toast';
 import { User } from '../../../core/models/User';
+import { Observable, of, tap } from 'rxjs';
+import { RoleStore } from './role.store';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +21,8 @@ export class UserStore {
   readonly users = this._users.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly searchQuery = this._searchQuery.asReadonly();
+  private readonly _isLoaded = signal<boolean>(false);
+
 
   // --- Propriété Calculée : Filtrage dynamique des utilisateurs ---
   readonly filteredUsers = computed(() => {
@@ -118,5 +122,19 @@ export class UserStore {
         this.toast.error(err?.error?.message ?? 'Erreur lors de la suppression.');
       },
     });
+  }
+
+loadUsersObservable(forceRefresh = false): Observable<User[]> {
+    if (!forceRefresh && this._isLoaded()) {
+      return of(this._users());
+    }
+
+   // Dans UserStore.ts (ligne 131)
+return this.userService.loadUsers1().pipe( // Utilisez le nom de méthode existant
+  tap((data) => {
+    this._users.set(data);
+    this._isLoaded.set(true);
+  })
+);
   }
 }

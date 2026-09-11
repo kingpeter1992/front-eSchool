@@ -1,0 +1,1037 @@
+<div class="enrollment-details-page">
+
+  <!-- =========================================================
+       PAGE HEADER
+  ========================================================== -->
+
+  <header class="page-header">
+
+    <div class="header-left">
+
+      <button
+        type="button"
+        class="btn-back"
+        (click)="back()"
+        title="Retour aux inscriptions">
+
+        <i class="bi bi-arrow-left"></i>
+
+      </button>
+
+      <div>
+
+        <div class="breadcrumb">
+          <span>Inscriptions</span>
+          <i class="bi bi-chevron-right"></i>
+          <strong>Détail du dossier</strong>
+        </div>
+
+        <div class="title-row">
+
+          <h1>
+            Dossier d'inscription
+          </h1>
+
+          @if (enrollment()) {
+
+            <span
+              class="status-badge"
+              [ngClass]="statusClass()">
+
+              <i [class]="statusIcon()"></i>
+
+              {{ statusLabel() }}
+
+            </span>
+
+          }
+
+        </div>
+
+        <p>
+          Consultation et suivi administratif du dossier de l'élève.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    @if (enrollment()) {
+
+      <div class="header-actions">
+
+        <button
+          type="button"
+          class="btn-action btn-outline"
+          (click)="editEnrollment()">
+
+          <i class="bi bi-pencil"></i>
+
+          Modifier
+
+        </button>
+
+      </div>
+
+    }
+
+  </header>
+
+
+  <!-- =========================================================
+       LOADING
+  ========================================================== -->
+
+  @if (isLoading()) {
+
+    <div class="loading-state">
+
+      <div class="loading-spinner"></div>
+
+      <div>
+        <strong>Chargement du dossier...</strong>
+        <span>Récupération des informations de l'inscription.</span>
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- =========================================================
+       ERROR
+  ========================================================== -->
+
+  @if (!isLoading() && error()) {
+
+    <div class="error-state">
+
+      <div class="error-icon">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+
+      <div>
+
+        <h3>Impossible de charger le dossier</h3>
+
+        <p>
+          {{ error() }}
+        </p>
+
+        <button
+          type="button"
+          class="btn-action btn-primary"
+          (click)="ngOnInit()">
+
+          <i class="bi bi-arrow-clockwise"></i>
+
+          Réessayer
+
+        </button>
+
+      </div>
+
+    </div>
+
+  }
+
+
+  <!-- =========================================================
+       CONTENT
+  ========================================================== -->
+
+  @if (!isLoading() && enrollment()) {
+
+    <div class="content-grid">
+
+
+      <!-- =====================================================
+           COLONNE PRINCIPALE
+      ====================================================== -->
+
+      <main class="main-column">
+
+
+        <!-- ===================================================
+             STUDENT HERO
+        ==================================================== -->
+
+        <section class="student-hero card-premium">
+
+          <div class="student-profile">
+
+            <div class="student-avatar">
+              {{ studentInitials() }}
+            </div>
+
+            <div class="student-info">
+
+              <span class="eyebrow">
+                Élève candidat
+              </span>
+
+              <h2>
+                {{ studentFullName() }}
+              </h2>
+
+              <div class="student-meta">
+
+                @if (registrationNumber()) {
+
+                  <span>
+                    <i class="bi bi-person-badge"></i>
+                    Matricule :
+                    <strong>
+                      {{ registrationNumber() }}
+                    </strong>
+                  </span>
+
+                } @else {
+
+                  <span class="not-generated">
+                    <i class="bi bi-hourglass-split"></i>
+                    Matricule non encore généré
+                  </span>
+
+                }
+
+                <span class="separator">•</span>
+
+                <span>
+                  <i class="bi bi-calendar3"></i>
+                  {{ academicYearName() }}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="hero-status">
+
+            <span class="status-label">
+              État du dossier
+            </span>
+
+            <span
+              class="status-badge large"
+              [ngClass]="statusClass()">
+
+              <i [class]="statusIcon()"></i>
+
+              {{ statusLabel() }}
+
+            </span>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             INFORMATIONS ACADÉMIQUES
+        ==================================================== -->
+
+        <section class="card-premium">
+
+          <div class="section-header">
+
+            <div>
+
+              <span class="section-kicker">
+                Parcours scolaire
+              </span>
+
+              <h2>
+                Informations académiques
+              </h2>
+
+            </div>
+
+            <div class="section-icon">
+              <i class="bi bi-mortarboard"></i>
+            </div>
+
+          </div>
+
+
+          <div class="info-grid">
+
+            <div class="info-item">
+
+              <span class="info-label">
+                <i class="bi bi-building"></i>
+                Établissement
+              </span>
+
+              <strong>
+                {{ schoolName() }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span class="info-label">
+                <i class="bi bi-buildings"></i>
+                Campus
+              </span>
+
+              <strong>
+                {{ campusName() }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span class="info-label">
+                <i class="bi bi-calendar-range"></i>
+                Année scolaire
+              </span>
+
+              <strong>
+                {{ academicYearName() }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span class="info-label">
+                <i class="bi bi-diagram-3"></i>
+                Classe
+              </span>
+
+              <strong
+                [class.muted-value]="className() === 'Non affecté'">
+
+                {{ className() }}
+
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span class="info-label">
+                <i class="bi bi-calendar-check"></i>
+                Date d'admission
+              </span>
+
+              <strong>
+                {{ formatDate(admissionDate()) }}
+              </strong>
+
+            </div>
+
+
+            <div class="info-item">
+
+              <span class="info-label">
+                <i class="bi bi-clock-history"></i>
+                Date de création
+              </span>
+
+              <strong>
+                {{ formatDate(createdDate()) }}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             PARENT / TUTEUR
+        ==================================================== -->
+
+        <section class="card-premium">
+
+          <div class="section-header">
+
+            <div>
+
+              <span class="section-kicker">
+                Responsabilité légale
+              </span>
+
+              <h2>
+                Parent / Tuteur
+              </h2>
+
+            </div>
+
+            <div class="section-icon">
+              <i class="bi bi-people"></i>
+            </div>
+
+          </div>
+
+
+          <div class="guardian-card">
+
+            <div class="guardian-avatar">
+              <i class="bi bi-person"></i>
+            </div>
+
+            <div class="guardian-main">
+
+              <strong>
+                {{ parentName() }}
+              </strong>
+
+              <span>
+                Tuteur légal / Parent
+              </span>
+
+            </div>
+
+
+            <div class="guardian-contact">
+
+              <div>
+
+                <i class="bi bi-envelope"></i>
+
+                <span>
+                  {{ parentEmail() }}
+                </span>
+
+              </div>
+
+              <div>
+
+                <i class="bi bi-telephone"></i>
+
+                <span>
+                  {{ parentPhone() }}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             DOCUMENTS
+        ==================================================== -->
+
+        <section class="card-premium">
+
+          <div class="section-header">
+
+            <div>
+
+              <span class="section-kicker">
+                Pièces justificatives
+              </span>
+
+              <h2>
+                Documents du dossier
+              </h2>
+
+            </div>
+
+            <span class="document-count">
+              {{ documents().length }} document(s)
+            </span>
+
+          </div>
+
+
+          @if (documents().length > 0) {
+
+            <div class="documents-list">
+
+              @for (
+                document of documents();
+                track document.id || $index
+              ) {
+
+                <div class="document-item">
+
+                  <div class="document-icon">
+
+                    <i
+                      [class]="
+                        getDocumentIcon(
+                          document.type ||
+                          document.mimeType ||
+                          document.name
+                        )
+                      ">
+                    </i>
+
+                  </div>
+
+
+                  <div class="document-info">
+
+                    <strong>
+                      {{ document.name || 'Document' }}
+                    </strong>
+
+                    <span>
+                      {{ document.type || 'Pièce justificative' }}
+                    </span>
+
+                  </div>
+
+
+                  <div class="document-date">
+
+                    {{ formatShortDate(
+                      document.createdAt ||
+                      document.uploadedAt
+                    ) }}
+
+                  </div>
+
+
+                  <button
+                    type="button"
+                    class="document-action"
+                    title="Consulter">
+
+                    <i class="bi bi-eye"></i>
+
+                  </button>
+
+                </div>
+
+              }
+
+            </div>
+
+          } @else {
+
+            <div class="documents-empty">
+
+              <div>
+                <i class="bi bi-folder2-open"></i>
+              </div>
+
+              <strong>
+                Aucun document disponible
+              </strong>
+
+              <span>
+                Les pièces justificatives du dossier apparaîtront ici.
+              </span>
+
+            </div>
+
+          }
+
+        </section>
+
+
+        <!-- ===================================================
+             HISTORIQUE
+        ==================================================== -->
+
+        <section class="card-premium">
+
+          <div class="section-header">
+
+            <div>
+
+              <span class="section-kicker">
+                Traçabilité
+              </span>
+
+              <h2>
+                Historique du dossier
+              </h2>
+
+            </div>
+
+            <div class="section-icon">
+              <i class="bi bi-clock-history"></i>
+            </div>
+
+          </div>
+
+
+          <div class="timeline">
+
+            <div class="timeline-item active">
+
+              <div class="timeline-marker">
+                <i class="bi bi-file-earmark-plus"></i>
+              </div>
+
+              <div class="timeline-content">
+
+                <strong>
+                  Dossier créé
+                </strong>
+
+                <span>
+                  Demande d'inscription enregistrée.
+                </span>
+
+              </div>
+
+            </div>
+
+
+            @if (
+              enrollment()?.status === 'REVIEWING' ||
+              enrollment()?.status === 'ACCEPTED' ||
+              enrollment()?.status === 'ENROLLED'
+            ) {
+
+              <div class="timeline-item active">
+
+                <div class="timeline-marker">
+                  <i class="bi bi-search"></i>
+                </div>
+
+                <div class="timeline-content">
+
+                  <strong>
+                    Dossier en cours d'examen
+                  </strong>
+
+                  <span>
+                    Le secrétariat a commencé l'instruction du dossier.
+                  </span>
+
+                </div>
+
+              </div>
+
+            }
+
+
+            @if (
+              enrollment()?.status === 'ACCEPTED' ||
+              enrollment()?.status === 'ENROLLED'
+            ) {
+
+              <div class="timeline-item active">
+
+                <div class="timeline-marker">
+                  <i class="bi bi-check-lg"></i>
+                </div>
+
+                <div class="timeline-content">
+
+                  <strong>
+                    Admission acceptée
+                  </strong>
+
+                  <span>
+                    La candidature de l'élève a été acceptée.
+                  </span>
+
+                </div>
+
+              </div>
+
+            }
+
+
+            @if (enrollment()?.status === 'ENROLLED') {
+
+              <div class="timeline-item active">
+
+                <div class="timeline-marker">
+                  <i class="bi bi-patch-check"></i>
+                </div>
+
+                <div class="timeline-content">
+
+                  <strong>
+                    Inscription définitive
+                  </strong>
+
+                  <span>
+                    L'élève est officiellement inscrit dans l'établissement.
+                  </span>
+
+                </div>
+
+              </div>
+
+            }
+
+
+            @if (enrollment()?.status === 'REJECTED') {
+
+              <div class="timeline-item rejected">
+
+                <div class="timeline-marker">
+                  <i class="bi bi-x-lg"></i>
+                </div>
+
+                <div class="timeline-content">
+
+                  <strong>
+                    Candidature rejetée
+                  </strong>
+
+                  <span>
+                    Le dossier n'a pas été retenu.
+                  </span>
+
+                </div>
+
+              </div>
+
+            }
+
+          </div>
+
+        </section>
+
+      </main>
+
+
+      <!-- =====================================================
+           SIDEBAR
+      ====================================================== -->
+
+      <aside class="side-column">
+
+
+        <!-- ===================================================
+             RÉSUMÉ DU DOSSIER
+        ==================================================== -->
+
+        <section class="card-premium summary-card">
+
+          <div class="summary-header">
+
+            <div class="summary-icon">
+              <i class="bi bi-clipboard-check"></i>
+            </div>
+
+            <div>
+
+              <span>
+                DOSSIER
+              </span>
+
+              <strong>
+                {{ enrollment()?.id }}
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div class="summary-status">
+
+            <span>
+              Statut actuel
+            </span>
+
+            <span
+              class="status-badge"
+              [ngClass]="statusClass()">
+
+              <i [class]="statusIcon()"></i>
+
+              {{ statusLabel() }}
+
+            </span>
+
+          </div>
+
+
+          <div class="summary-divider"></div>
+
+
+          <div class="summary-item">
+
+            <span>
+              Année scolaire
+            </span>
+
+            <strong>
+              {{ academicYearName() }}
+            </strong>
+
+          </div>
+
+
+          <div class="summary-item">
+
+            <span>
+              Matricule
+            </span>
+
+            <strong
+              [class.muted-value]="!registrationNumber()">
+
+              {{ registrationNumber() || 'Non généré' }}
+
+            </strong>
+
+          </div>
+
+
+          <div class="summary-item">
+
+            <span>
+              Classe
+            </span>
+
+            <strong
+              [class.muted-value]="className() === 'Non affecté'">
+
+              {{ className() }}
+
+            </strong>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================
+             ACTIONS WORKFLOW
+        ==================================================== -->
+
+        <section class="card-premium workflow-card">
+
+          <div class="workflow-header">
+
+            <span class="section-kicker">
+              Actions
+            </span>
+
+            <h3>
+              Traitement du dossier
+            </h3>
+
+          </div>
+
+
+          <!-- PENDING -->
+
+          @if (enrollment()?.status === 'PENDING') {
+
+            <button
+              type="button"
+              class="workflow-btn primary"
+              (click)="reviewEnrollment()">
+
+              <span class="workflow-btn-icon">
+                <i class="bi bi-search"></i>
+              </span>
+
+              <span>
+
+                <strong>
+                  Examiner le dossier
+                </strong>
+
+                <small>
+                  Passer en cours d'examen
+                </small>
+
+              </span>
+
+              <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+          }
+
+
+          <!-- REVIEWING -->
+
+          @if (enrollment()?.status === 'REVIEWING') {
+
+            <button
+              type="button"
+              class="workflow-btn success"
+              (click)="acceptEnrollment()">
+
+              <span class="workflow-btn-icon">
+                <i class="bi bi-check-lg"></i>
+              </span>
+
+              <span>
+
+                <strong>
+                  Accepter la candidature
+                </strong>
+
+                <small>
+                  Valider l'admission
+                </small>
+
+              </span>
+
+              <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+
+            <button
+              type="button"
+              class="workflow-btn danger"
+              (click)="rejectEnrollment()">
+
+              <span class="workflow-btn-icon">
+                <i class="bi bi-x-lg"></i>
+              </span>
+
+              <span>
+
+                <strong>
+                  Rejeter la candidature
+                </strong>
+
+                <small>
+                  Refuser le dossier
+                </small>
+
+              </span>
+
+              <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+          }
+
+
+          <!-- ACCEPTED -->
+
+          @if (enrollment()?.status === 'ACCEPTED') {
+
+            <button
+              type="button"
+              class="workflow-btn success"
+              (click)="enrollStudent()">
+
+              <span class="workflow-btn-icon">
+                <i class="bi bi-person-check"></i>
+              </span>
+
+              <span>
+
+                <strong>
+                  Inscrire définitivement
+                </strong>
+
+                <small>
+                  Générer le matricule
+                </small>
+
+              </span>
+
+              <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+          }
+
+
+          <!-- ENROLLED -->
+
+          @if (enrollment()?.status === 'ENROLLED') {
+
+            <button
+              type="button"
+              class="workflow-btn primary"
+              (click)="assignClass()">
+
+              <span class="workflow-btn-icon">
+                <i class="bi bi-diagram-3"></i>
+              </span>
+
+              <span>
+
+                <strong>
+                  Affecter à une classe
+                </strong>
+
+                <small>
+                  Choisir une classe disponible
+                </small>
+
+              </span>
+
+              <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+          }
+
+
+          @if (
+            enrollment()?.status !== 'PENDING' &&
+            enrollment()?.status !== 'REVIEWING' &&
+            enrollment()?.status !== 'ACCEPTED' &&
+            enrollment()?.status !== 'ENROLLED'
+          ) {
+
+            <div class="no-action">
+
+              <i class="bi bi-info-circle"></i>
+
+              <span>
+                Aucune action disponible pour ce dossier.
+              </span>
+
+            </div>
+
+          }
+
+        </section>
+
+
+        <!-- ===================================================
+             RÈGLES MÉTIER
+        ==================================================== -->
+
+        <section class="info-help-card">
+
+          <div class="help-icon">
+            <i class="bi bi-shield-check"></i>
+          </div>
+
+          <div>
+
+            <strong>
+              Règles d'inscription
+            </strong>
+
+            <p>
+              Un élève doit être au statut
+              <b>ENROLLED</b>
+              avant de pouvoir être affecté à une classe.
+            </p>
+
+          </div>
+
+        </section>
+
+
+      </aside>
+
+    </div>
+
+  }
+
+</div>

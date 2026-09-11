@@ -15,7 +15,10 @@ export interface AuthResponse {
   token: string;
   refreshToken?: string;
   user: User;
-  school?: SchoolResponse;
+  school?: SchoolResponse; // 👈 Utiliser SchoolResponse au lieu de SchoolInfo
+  campus?: any;
+  role?: string;
+  roles: string[];
   permissions: string[];
 }
 
@@ -74,6 +77,7 @@ export interface CreateUserDto {
   schoolId?: string;
   campusId?: string;
   roleSlugs: string[];
+  roleIds? : string []
 }
 export interface School {
   id: string;
@@ -93,6 +97,12 @@ export interface Role {
   permissions: Permission[];
 }
 
+export interface RoleResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+}
 export interface AssignUserAccessDto {
   userId: string;
   roleIds: string[];

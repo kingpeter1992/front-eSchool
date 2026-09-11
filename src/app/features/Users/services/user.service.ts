@@ -21,6 +21,12 @@ export class UserService {
     ).subscribe();
   }
 
+// Dans UserService
+loadUsers1(): Observable<User[]> {
+  return this.http.get<User[]>(this.apiUrl).pipe(
+    tap((users) => this.usersSubject.next(users))
+  );
+}
 
   updateUser(id: string, dto: Partial<User>): Observable<User> {
     return this.http.put<User>(`${this.apiUrl}/${id}`, dto).pipe(
@@ -43,4 +49,6 @@ export class UserService {
       tap(() => this.loadUsers())
     );
   }
+
+
 }

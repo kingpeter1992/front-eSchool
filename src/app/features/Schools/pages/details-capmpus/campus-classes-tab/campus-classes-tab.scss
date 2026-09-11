@@ -1,0 +1,827 @@
+// ============================================================
+// VARIABLES & DESIGN TOKENS
+// ============================================================
+$primary-color: #2563eb;
+$primary-hover: #1d4ed8;
+$primary-light: #eff6ff;
+
+$text-dark: #0f172a;
+$text-medium: #334155;
+$text-muted: #64748b;
+
+$bg-main: #f8fafc;
+$bg-card: #ffffff;
+$bg-section: #fafafa;
+
+$border-color: #e2e8f0;
+$border-input: #cbd5e1;
+
+$danger-color: #ef4444;
+$danger-hover: #dc2626;
+$danger-bg: #fef2f2;
+
+$radius-sm: 6px;
+$radius-md: 8px;
+$radius-lg: 12px;
+
+$transition: all 0.2s ease-in-out;
+
+// ============================================================
+// CONTENEUR PRINCIPAL & EN-TÊTE
+// ============================================================
+.classes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.action-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .search-and-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 280px;
+
+    .search-input-wrapper,
+    .filter-select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      i {
+        position: absolute;
+        left: 0.875rem;
+        color: $text-muted;
+        font-size: 0.875rem;
+        pointer-events: none;
+      }
+
+      input,
+      select {
+        height: 40px;
+        padding-left: 2.5rem;
+        padding-right: 1rem;
+        border: 1px solid $border-input;
+        border-radius: $radius-md;
+        font-size: 0.875rem;
+        color: $text-dark;
+        background-color: $bg-card;
+        outline: none;
+        transition: $transition;
+
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+        }
+      }
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      max-width: 360px;
+
+      input {
+        width: 100%;
+      }
+    }
+
+    .filter-select-wrapper {
+      select {
+        cursor: pointer;
+        appearance: none;
+        padding-right: 2rem;
+      }
+    }
+  }
+
+  .btn-primary {
+    height: 40px;
+    padding: 0 1.25rem;
+    background-color: $primary-color;
+    color: #ffffff;
+    border: none;
+    border-radius: $radius-md;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: $transition;
+
+    &:hover {
+      background-color: $primary-hover;
+    }
+  }
+}
+
+// ============================================================
+// GRILLE DES CLASSES & CARTES
+// ============================================================
+.classes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.class-card {
+  background: $bg-card;
+  border: 1px solid $border-color;
+  border-radius: $radius-lg;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: $transition;
+
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border-color: lighten($primary-color, 30%);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .badge-cycle {
+      background-color: $primary-light;
+      color: $primary-color;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      .btn-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: $radius-sm;
+        border: none;
+        background: transparent;
+        color: $text-muted;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: $transition;
+
+        &:hover {
+          background-color: $bg-main;
+          color: $text-dark;
+        }
+
+        &.danger:hover {
+          background-color: $danger-bg;
+          color: $danger-color;
+        }
+      }
+    }
+  }
+
+  .class-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $text-dark;
+  }
+
+  .card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      font-size: 0.813rem;
+      color: $text-muted;
+
+      i {
+        font-size: 0.875rem;
+        color: lighten($text-muted, 15%);
+        width: 16px;
+        text-align: center;
+      }
+
+      strong {
+        color: $text-medium;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// EMPTY STATE
+.empty-state {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: $bg-card;
+  border: 2px dashed $border-color;
+  border-radius: $radius-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  .empty-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: $bg-main;
+    color: $text-muted;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-dark;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: $text-muted;
+    max-width: 400px;
+  }
+}
+
+// ============================================================
+// MODALE CRÉATION / ÉDITION
+// ============================================================
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+}
+
+.class-modal {
+  background: $bg-card;
+  border-radius: $radius-lg;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  // HEADER MODALE
+  .modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: $bg-main;
+
+    .modal-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .modal-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: $radius-md;
+        background-color: $primary-light;
+        color: $primary-color;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: $text-dark;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.813rem;
+        color: $text-muted;
+      }
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: lighten($text-muted, 15%);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: $radius-sm;
+      transition: $transition;
+
+      &:hover {
+        background: $border-color;
+        color: $text-dark;
+      }
+    }
+  }
+
+  // BODY FORMULAIRE
+  .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .form-section {
+      background: $bg-section;
+      border: 1px solid lighten($border-color, 3%);
+      border-radius: $radius-md;
+      padding: 1.25rem;
+
+      .section-heading {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+
+        .section-number {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: $primary-color;
+          color: #ffffff;
+          font-weight: 600;
+          font-size: 0.75rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        h4 {
+          margin: 0;
+          font-size: 0.938rem;
+          font-weight: 600;
+          color: $text-medium;
+        }
+
+        p {
+          margin: 0;
+          font-size: 0.775rem;
+          color: $text-muted;
+        }
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+
+        &.dual-column {
+          grid-template-columns: repeat(2, 1fr);
+
+          @media (max-width: 640px) {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .full-width {
+          grid-column: 1 / -1;
+        }
+      }
+    }
+  }
+
+  // CHAMPS DU FORMULAIRE
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+
+    label {
+      font-size: 0.813rem;
+      font-weight: 500;
+      color: $text-medium;
+
+      .required {
+        color: $danger-color;
+      }
+
+      .optional {
+        color: $text-muted;
+        font-weight: 400;
+        font-size: 0.75rem;
+      }
+    }
+
+    .select-wrapper,
+    .input-with-icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      i {
+        position: absolute;
+        left: 0.75rem;
+        color: lighten($text-muted, 15%);
+        font-size: 0.875rem;
+        pointer-events: none;
+      }
+    }
+
+    select,
+    input {
+      width: 100%;
+      height: 40px;
+      padding: 0 0.75rem;
+      border: 1px solid $border-input;
+      border-radius: $radius-sm;
+      font-size: 0.875rem;
+      background-color: $bg-card;
+      color: $text-dark;
+      outline: none;
+      transition: $transition;
+
+      &:focus {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+      }
+
+      &.invalid {
+        border-color: $danger-color;
+      }
+
+      &:disabled {
+        background-color: lighten($border-color, 5%);
+        color: $text-muted;
+        cursor: not-allowed;
+      }
+    }
+
+    .input-with-icon input {
+      padding-left: 2.25rem;
+    }
+
+    .disabled-state {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .hint-text {
+      font-size: 0.75rem;
+      color: $primary-color;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-top: 0.25rem;
+    }
+
+    .error-message {
+      color: $danger-color;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+  }
+
+  // FOOTER MODALE
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid $border-color;
+    background-color: $bg-main;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+
+    .btn {
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0 1.25rem;
+      border-radius: $radius-sm;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: $transition;
+
+      &.btn-secondary {
+        background: $bg-card;
+        border: 1px solid $border-input;
+        color: $text-medium;
+
+        &:hover {
+          background: $bg-main;
+        }
+      }
+
+      &.btn-primary {
+        background: $primary-color;
+        color: #ffffff;
+
+        &:hover:not(:disabled) {
+          background: $primary-hover;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+// Dans .class-card
+.class-card {
+  // ... vos styles existants ...
+
+  .detail-item.teacher-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: #2563eb;
+      cursor: pointer;
+      padding: 0 0.25rem;
+      font-size: 0.875rem;
+
+      &:hover {
+        color: #1d4ed8;
+      }
+    }
+
+    .btn-assign-teacher {
+      background-color: #eff6ff;
+      color: #2563eb;
+      border: 1px dashed #2563eb;
+      border-radius: 4px;
+      padding: 0.125rem 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #2563eb;
+        color: #ffffff;
+      }
+    }
+  }
+
+  // Jauge de remplissage
+  .occupancy-section {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+
+    .occupancy-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.813rem;
+
+      .occupancy-count {
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+
+        i {
+          font-size: 0.875rem;
+          color: #64748b;
+        }
+
+        strong {
+          color: #0f172a;
+        }
+      }
+
+      .occupancy-percentage {
+        font-weight: 700;
+        color: #2563eb;
+
+        &.full {
+          color: #ef4444;
+        }
+      }
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 6px;
+      background-color: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+
+      .progress-bar-fill {
+        height: 100%;
+        background-color: #2563eb; // Bleu par défaut
+        border-radius: 9999px;
+        transition: width 0.3s ease-in-out;
+
+        &.warning {
+          background-color: #f59e0b; // Orange si >= 80%
+        }
+
+        &.danger {
+          background-color: #ef4444; // Rouge si 100%
+        }
+      }
+    }
+  }
+}
+
+.classes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+
+  /* Action Header */
+  .action-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .search-and-filters {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+      max-width: 600px;
+
+      .search-input-wrapper,
+      .filter-select-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 1;
+
+        i {
+          position: absolute;
+          left: 0.75rem;
+          color: #6b7280;
+        }
+
+        input,
+        select {
+          width: 100%;
+          padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.375rem;
+          outline: none;
+          &:focus {
+            border-color: #3b82f6;
+          }
+        }
+      }
+    }
+  }
+
+  /* Classes Grid */
+  .classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+
+    .class-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .class-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+      }
+
+      .card-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #4b5563;
+        margin-bottom: 1rem;
+
+        .detail-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
+
+      .occupancy-section {
+        border-top: 1px solid #f3f4f6;
+        padding-top: 0.75rem;
+
+        .occupancy-header {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.875rem;
+          margin-bottom: 0.25rem;
+        }
+
+        .progress-bar-track {
+          height: 6px;
+          background: #e5e7eb;
+          border-radius: 3px;
+          overflow: hidden;
+
+          .progress-bar-fill {
+            height: 100%;
+            background: #10b981;
+            &.warning { background: #f59e0b; }
+            &.danger { background: #ef4444; }
+          }
+        }
+      }
+    }
+  }
+
+  /* Modale Form Layout */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+
+    &.dual-column {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .input-with-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        i {
+          position: absolute;
+          left: 0.75rem;
+          color: #6b7280;
+        }
+
+        input {
+          width: 100%;
+          padding-left: 2.25rem;
+        }
+      }
+    }
+  }
+}

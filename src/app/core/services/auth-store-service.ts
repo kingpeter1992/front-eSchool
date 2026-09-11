@@ -32,6 +32,11 @@ export class AuthStoreService {
   private readonly _currentSchool = signal<SchoolResponse | null>(null);
   readonly currentSchool = this._currentSchool.asReadonly();
 
+  // 2. Computed pour récupérer directement l'ID de l'école (avec fallback sur le user ou storage)
+  readonly schoolId = computed(() => {
+    return this._currentSchool()?.id ?? this._user()?.school?.id ?? '';
+  });
+
   private readonly _user = signal<AuthResponse | null>(this.storage.getUser());
   private readonly _loading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
@@ -64,8 +69,16 @@ export class AuthStoreService {
           this.storage.saveAuth(response);
           this._user.set(response);
 
+          const schoolPayload: SchoolResponse | null = response.school
+            ? ({
+                ...response.school,
+                campuses: (response.school as any).campuses ?? [],
+                status: (response.school as any).status,
+              } as SchoolResponse)
+            : null;
+
           return this.initializer
-            .initialize(response.user.roles, response.school, response.permissions)
+            .initialize(response.roles, schoolPayload, response.permissions)
             .pipe(map(() => response));
         }),
         finalize(() => {
@@ -76,13 +89,13 @@ export class AuthStoreService {
         next: (response) => {
           this.splash.update('Bienvenue 👋', 100);
           this.splash.hide();
-          this.redirectBasedOnRoles(response.user.roles);
+          this.redirectBasedOnRoles(response.roles);
         },
         error: (err) => {
           this.splash.hide();
-          const message = err?.error?.message ?? 'Identifiants incorrects.';
-          this._error.set(message);
-          this.toast.error(message);
+          const serverMessage = err?.error?.message;
+          const errorMessage = serverMessage || 'Identifiants ou mot de passe incorrects.';
+          this._error.set(errorMessage);
         },
       });
   }
@@ -130,35 +143,23 @@ export class AuthStoreService {
         },
       });
   }
+private redirectBasedOnRoles(roles: string[]): void {
 
-  private redirectBasedOnRoles(roles: (Role | string)[]): void {
-    const roleKeys = roles.map((r) => (typeof r === 'string' ? r : r.id || r.slug || r.name));
+    console.log('role user', roles)
 
-    if (roleKeys.includes('ROLE_SUPER_ADMIN') || roleKeys.includes('SUPER_ADMIN')) {
-      this.router.navigate(['/dashboard']);
-      return;
-    }
-
-    if (roleKeys.includes('ROLE_ADMIN_ECOLE') || roleKeys.includes('ADMIN_ECOLE')) {
-      this.router.navigate(['/admin_ecole']);
-      return;
-    }
-
-    if (roleKeys.includes('ROLE_ENSEIGNANT') || roleKeys.includes('ENSEIGNANT')) {
-      this.router.navigate(['/teacher']);
-      return;
-    }
-
-    if (roleKeys.includes('ROLE_ELEVE') || roleKeys.includes('ELEVE')) {
-      this.router.navigate(['/student']);
-      return;
-    }
-
-    if (roleKeys.includes('ROLE_PARENT') || roleKeys.includes('PARENT')) {
-      this.router.navigate(['/parent']);
-      return;
-    }
-
-    this.router.navigate(['/unauthorized']);
+  // 1. Si Super Admin -> Redirection vers le dashboard Admin
+  if (roles.includes('ROLE_SUPER_ADMIN') || roles.includes('SUPER_ADMIN')) {
+    this.router.navigate(['/dashboard']);
+    return;
   }
+
+  // 2. Si Admin École -> Redirection vers son espace école  //ROLE_ADMIN
+  if (roles.includes('ROLE_ADMIN_ECOLE') || roles.includes('ADMIN_ECOLE') || roles.includes('ROLE_ADMIN') || roles.includes('ADMIN')) {
+    this.router.navigate(['/admin_ecole']);
+    return;
+  }
+
+  // 3. Fallback / Autres rôles
+  this.router.navigate(['/unauthorized']);
+}
 }

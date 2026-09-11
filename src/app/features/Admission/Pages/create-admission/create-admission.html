@@ -1,0 +1,1589 @@
+<div class="admission-wrapper">
+
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
+  <header class="admission-header">
+
+    <div class="header-left">
+
+      <button
+        type="button"
+        class="btn-back"
+        (click)="back()"
+        aria-label="Retour">
+
+        <i class="bi bi-arrow-left"></i>
+
+      </button>
+
+      <div>
+
+        <span class="eyebrow">
+          <i class="bi bi-shield-check"></i>
+          ADMISSIONS & PRÉINSCRIPTION
+        </span>
+
+        <h1 class="page-title">
+          Nouvelle Inscription Élève
+        </h1>
+
+        <p class="page-subtitle">
+          Renseignez le formulaire pas-à-pas pour constituer
+          le dossier scolaire complet.
+        </p>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+  <!-- ============================================================
+       CONTENEUR PRINCIPAL
+  ============================================================ -->
+  <main class="admission-card">
+
+
+    <!-- ============================================================
+         STEPPER
+    ============================================================ -->
+    <nav class="steps-navigation">
+
+      @for (step of steps; track step.id) {
+
+        <div
+          class="step-item"
+          [class.active]="currentStep() === step.id"
+          [class.completed]="currentStep() > step.id"
+          [class.disabled]="step.id > currentStep()"
+          (click)="goToStep(step.id)">
+
+          <div class="step-content">
+
+            <div class="step-number">
+
+              @if (currentStep() > step.id) {
+
+                <i class="bi bi-check-lg"></i>
+
+              } @else {
+
+                {{ step.id }}
+
+              }
+
+            </div>
+
+            <div class="step-label">
+
+              <strong>
+                {{ step.title }}
+              </strong>
+
+              <span>
+                {{ step.description }}
+              </span>
+
+            </div>
+
+          </div>
+
+          @if (step.id < steps.length) {
+
+            <div
+              class="step-line"
+              [class.completed]="currentStep() > step.id">
+            </div>
+
+          }
+
+        </div>
+
+      }
+
+    </nav>
+
+
+    <!-- ============================================================
+         PROGRESSION
+    ============================================================ -->
+    <div class="progress-section">
+
+      <div class="progress-info">
+
+        <span>
+          Étape {{ currentStep() }} sur {{ steps.length }}
+        </span>
+
+        <strong>
+          {{ progress() | number:'1.0-0' }}%
+        </strong>
+
+      </div>
+
+      <div class="progress-bar-wrapper">
+
+        <div
+          class="progress-bar"
+          [style.width.%]="progress()">
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         FORMULAIRE PRINCIPAL
+         IMPORTANT : UN SEUL FORM
+    ============================================================ -->
+    <form
+      [formGroup]="createForm"
+      class="form-content"
+      novalidate>
+
+      @switch (currentStep()) {
+
+
+        <!-- ======================================================
+             ÉTAPE 1 : ÉLÈVE
+        ====================================================== -->
+        @case (1) {
+
+          <div class="step-panel">
+
+            <div class="step-heading">
+
+              <div>
+
+                <h2 class="step-title">
+
+                  <i class="bi bi-person-bounding-box"></i>
+
+                  Identité de l'élève
+
+                </h2>
+
+                <p class="step-description">
+
+                  Saisissez les informations d'état civil
+                  et les coordonnées du candidat.
+
+                </p>
+
+              </div>
+
+              <span class="step-required">
+                * Champs obligatoires
+              </span>
+
+            </div>
+
+
+            <!-- PHOTO -->
+            <div class="form-section mb-4">
+
+              <span class="section-title">
+
+                <i class="bi bi-camera"></i>
+
+                Photo d'identité
+
+              </span>
+
+
+              <div class="avatar-upload-container">
+
+                <div class="avatar-preview">
+
+                  @if (photoPreviewUrl()) {
+
+                    <img
+                      [src]="photoPreviewUrl()"
+                      alt="Aperçu photo"
+                      class="avatar-img">
+
+                  } @else {
+
+                    <div class="avatar-placeholder">
+
+                      <i class="bi bi-person"></i>
+
+                      <span>
+                        Format JPG/PNG
+                      </span>
+
+                    </div>
+
+                  }
+
+                </div>
+
+
+                <div class="upload-info">
+
+                  <span class="upload-title">
+                    Importer une photo de profil
+                  </span>
+
+                  <span class="upload-description">
+                    Dimension recommandée : 300x300 px.
+                    Taille maximale : 2 Mo.
+                  </span>
+
+
+                  <label
+                    class="btn-premium btn-secondary fit-content mt-2">
+
+                    <i class="bi bi-upload"></i>
+
+                    Choisir une photo
+
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      (change)="onPhotoSelected($event)"
+                      hidden>
+
+                  </label>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- IDENTITÉ -->
+            <div class="form-grid-3">
+
+              <div class="form-group">
+
+                <label class="form-label required">
+                  Nom
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="candidateLastName"
+                  class="form-control"
+                  placeholder="ex : KABAMBA">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Post-nom
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="candidatePostName"
+                  class="form-control"
+                  placeholder="ex : ILUNGA">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label required">
+                  Prénom
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="candidateFirstName"
+                  class="form-control"
+                  placeholder="ex : Jean">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label required">
+                  Sexe
+                </label>
+
+                <select
+                  formControlName="gender"
+                  class="form-select">
+
+                  <option value="M">
+                    Masculin (M)
+                  </option>
+
+                  <option value="F">
+                    Féminin (F)
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label required">
+                  Date de naissance
+                </label>
+
+                <input
+                  type="date"
+                  formControlName="candidateDateOfBirth"
+                  class="form-control">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Lieu de naissance
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="placeOfBirth"
+                  class="form-control"
+                  placeholder="ex : Lubumbashi">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label required">
+                  Téléphone candidat
+                </label>
+
+                <div class="input-icon-wrapper">
+
+                  <i class="bi bi-telephone"></i>
+
+                  <input
+                    type="tel"
+                    formControlName="candidatePhone"
+                    class="form-control"
+                    placeholder="081XXXXXXX">
+
+                </div>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label required">
+                  Adresse Email
+                </label>
+
+                <div class="input-icon-wrapper">
+
+                  <i class="bi bi-envelope"></i>
+
+                  <input
+                    type="email"
+                    formControlName="candidateEmail"
+                    class="form-control"
+                    placeholder="exemple@mail.com">
+
+                </div>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  État civil
+                </label>
+
+                <select
+                  formControlName="maritalStatus"
+                  class="form-select">
+
+                  <option value="Célibataire">
+                    Célibataire
+                  </option>
+
+                  <option value="Marié(e)">
+                    Marié(e)
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Nationalité
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="nationality"
+                  class="form-control">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Ville de résidence
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="city"
+                  class="form-control"
+                  placeholder="ex : Lubumbashi">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Commune / District
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="district"
+                  class="form-control"
+                  placeholder="ex : Kampemba">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Village d'origine
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="originVillage"
+                  class="form-control">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Territoire
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="territory"
+                  class="form-control">
+
+              </div>
+
+
+              <div class="form-group full-width">
+
+                <label class="form-label">
+                  Adresse domiciliaire complète
+                </label>
+
+                <textarea
+                  formControlName="address"
+                  class="form-control"
+                  rows="2"
+                  placeholder="Numéro, Avenue, Quartier...">
+                </textarea>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <!-- ======================================================
+             ÉTAPE 2 : PARENT
+        ====================================================== -->
+        @case (2) {
+
+          <div class="step-panel">
+
+            <div class="step-heading">
+
+              <h2 class="step-title">
+
+                <i class="bi bi-people-fill"></i>
+
+                Responsable légal / Tuteur
+
+              </h2>
+
+              <p class="step-description">
+
+                Coordonnées de la personne responsable
+                de l'élève.
+
+              </p>
+
+            </div>
+
+
+            <div class="form-grid">
+
+              <div class="form-group full-width">
+
+                <label class="form-label">
+                  Nom complet du tuteur / parent
+                </label>
+
+                <div class="input-icon-wrapper">
+
+                  <i class="bi bi-person"></i>
+
+                  <input
+                    type="text"
+                    formControlName="parentFullName"
+                    class="form-control"
+                    placeholder="ex : M. KABAMBA Pierre">
+
+                </div>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Téléphone du responsable
+                </label>
+
+                <div class="input-icon-wrapper">
+
+                  <i class="bi bi-telephone-fill"></i>
+
+                  <input
+                    type="tel"
+                    formControlName="parentPhone"
+                    class="form-control"
+                    placeholder="099XXXXXXX">
+
+                </div>
+
+              </div>
+
+
+              <div class="form-group full-width">
+
+                <label class="form-label">
+                  Adresse du responsable
+                </label>
+
+                <textarea
+                  formControlName="parentAddress"
+                  class="form-control"
+                  rows="3"
+                  placeholder="Adresse du tuteur...">
+                </textarea>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <!-- ======================================================
+             ÉTAPE 3 : SCOLARITÉ
+        ====================================================== -->
+        @case (3) {
+
+          <div class="step-panel">
+
+            <div class="step-heading">
+
+              <h2 class="step-title">
+
+                <i class="bi bi-journal-bookmark-fill"></i>
+
+                Orientation et affectation
+
+              </h2>
+
+              <p class="step-description">
+
+                Choisissez la vacation et la classe
+                souhaitée par le candidat.
+
+              </p>
+
+            </div>
+
+
+            <div class="form-grid-3">
+
+
+              <div class="form-group full-width">
+
+                <label class="form-label required">
+                  Vacation désirée
+                </label>
+
+
+                <div class="radio-grid">
+
+
+                  <button
+                    type="button"
+                    class="custom-radio-card"
+                    [class.selected]="createForm.get('vacation')?.value === 'JOUR'"
+                    (click)="setVacation('JOUR')">
+
+                    <i class="bi bi-sun radio-icon"></i>
+
+                    <span class="radio-title">
+                      JOUR / MATIN
+                    </span>
+
+                    <span class="radio-description">
+                      Cours en journée standard
+                    </span>
+
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="custom-radio-card"
+                    [class.selected]="createForm.get('vacation')?.value === 'SOIR'"
+                    (click)="setVacation('SOIR')">
+
+                    <i class="bi bi-moon-stars radio-icon"></i>
+
+                    <span class="radio-title">
+                      SOIR
+                    </span>
+
+                    <span class="radio-description">
+                      Cours du soir
+                    </span>
+
+                  </button>
+
+
+                </div>
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label required">
+                  Classe sollicitée
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="targetClass"
+                  class="form-control"
+                  placeholder="ex : 3ème Humanités">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Cycle
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="cycle"
+                  class="form-control"
+                  placeholder="ex : Secondaire">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Section
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="section"
+                  class="form-control"
+                  placeholder="ex : Technique">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Option
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="option"
+                  class="form-control"
+                  placeholder="ex : Informatique">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Établissement de provenance
+                </label>
+
+                <input
+                  type="text"
+                  formControlName="previousSchool"
+                  class="form-control"
+                  placeholder="ex : CS Salama">
+
+              </div>
+
+
+              <div class="form-group">
+
+                <label class="form-label">
+                  Pourcentage obtenu (%)
+                </label>
+
+                <input
+                  type="number"
+                  formControlName="previousPercentage"
+                  class="form-control"
+                  min="0"
+                  max="100"
+                  placeholder="ex : 68.5">
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <!-- ======================================================
+             ÉTAPE 4 : DOCUMENTS
+        ====================================================== -->
+        @case (4) {
+
+          <div class="step-panel">
+
+            <div class="step-heading">
+
+              <div>
+
+                <h2 class="step-title">
+
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+
+                  Documents et pièces d'admission
+
+                </h2>
+
+                <p class="step-description">
+
+                  Joignez les justificatifs numérisés.
+
+                </p>
+
+              </div>
+
+
+              <button
+                type="button"
+                class="btn-premium btn-secondary"
+                (click)="addDocumentRow()">
+
+                <i class="bi bi-plus-lg"></i>
+
+                Ajouter un document
+
+              </button>
+
+            </div>
+
+
+            <div
+              formArrayName="documents"
+              class="documents-dynamic-wrapper">
+
+              @for (
+                docGroup of documentsArray.controls;
+                track $index
+              ) {
+
+                <div
+                  [formGroupName]="$index"
+                  class="dynamic-doc-row">
+
+
+                  <div class="doc-row-index">
+                    #{{ $index + 1 }}
+                  </div>
+
+
+                  <div class="form-group flex-grow-1">
+
+                    <label class="form-label required">
+                      Type de document
+                    </label>
+
+                    <select
+                      formControlName="documentType"
+                      class="form-select">
+
+                      <option value="">
+                        -- Sélectionner le type --
+                      </option>
+
+                      <option value="Bulletin">
+                        Bulletin scolaire
+                      </option>
+
+                      <option value="Diplôme / Attestation">
+                        Diplôme / Attestation de réussite
+                      </option>
+
+                      <option value="Acte de Naissance">
+                        Acte de naissance
+                      </option>
+
+                      <option value="Certificat de Bonne Conduite">
+                        Certificat de bonne conduite
+                      </option>
+
+                      <option value="Autre">
+                        Autre document
+                      </option>
+
+                    </select>
+
+                  </div>
+
+
+                  <div class="form-group flex-grow-2">
+
+                    <label class="form-label required">
+                      Fichier joint
+                    </label>
+
+                    <div class="file-input-wrapper">
+
+                      <input
+                        type="file"
+                        #fileInput
+                        (change)="onDocumentFileSelected($event, $index)"
+                        hidden>
+
+                      <button
+                        type="button"
+                        class="btn-file-trigger"
+                        (click)="fileInput.click()">
+
+                        <i class="bi bi-paperclip"></i>
+
+                        <span>
+                          {{
+                            docGroup.get('fileName')?.value ||
+                            'Parcourir un fichier...'
+                          }}
+                        </span>
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+
+                  @if (documentsArray.length > 1) {
+
+                    <button
+                      type="button"
+                      class="btn-delete-row"
+                      (click)="removeDocumentRow($index)"
+                      title="Supprimer">
+
+                      <i class="bi bi-trash3"></i>
+
+                    </button>
+
+                  }
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+        }
+
+
+        <!-- ======================================================
+             ÉTAPE 5 : CONFIRMATION
+        ====================================================== -->
+        @case (5) {
+
+          <div class="step-panel">
+
+            <div class="step-heading">
+
+              <h2 class="step-title">
+
+                <i class="bi bi-shield-check"></i>
+
+                Résumé du dossier d'admission
+
+              </h2>
+
+              <p class="step-description">
+
+                Vérifiez les informations avant de poursuivre
+                vers le règlement des frais administratifs.
+
+              </p>
+
+            </div>
+
+
+            <div class="summary-grid">
+
+
+              <!-- ÉLÈVE -->
+              <div class="summary-card">
+
+                <div class="summary-header">
+
+                  <i class="bi bi-person"></i>
+
+                  Élève
+
+                </div>
+
+
+                <div class="summary-body">
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Nom complet
+                    </span>
+
+                    <strong class="summary-value">
+
+                      {{ createForm.get('candidateFirstName')?.value }}
+
+                      {{ createForm.get('candidatePostName')?.value }}
+
+                      {{ createForm.get('candidateLastName')?.value }}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Sexe / Date naissance
+                    </span>
+
+                    <span class="summary-value">
+
+                      {{ createForm.get('gender')?.value }}
+
+                      |
+
+                      {{ createForm.get('candidateDateOfBirth')?.value }}
+
+                    </span>
+
+                  </div>
+
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Téléphone
+                    </span>
+
+                    <span class="summary-value">
+
+                      {{ createForm.get('candidatePhone')?.value }}
+
+                    </span>
+
+                  </div>
+
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Email
+                    </span>
+
+                    <span class="summary-value">
+
+                      {{ createForm.get('candidateEmail')?.value }}
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- PARENT -->
+              <div class="summary-card">
+
+                <div class="summary-header">
+
+                  <i class="bi bi-people"></i>
+
+                  Responsable
+
+                </div>
+
+
+                <div class="summary-body">
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Nom complet
+                    </span>
+
+                    <strong class="summary-value">
+
+                      {{
+                        createForm.get('parentFullName')?.value ||
+                        'Non renseigné'
+                      }}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Téléphone
+                    </span>
+
+                    <span class="summary-value">
+
+                      {{
+                        createForm.get('parentPhone')?.value ||
+                        'Non renseigné'
+                      }}
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- ORIENTATION -->
+              <div class="summary-card">
+
+                <div class="summary-header">
+
+                  <i class="bi bi-mortarboard"></i>
+
+                  Orientation
+
+                </div>
+
+
+                <div class="summary-body">
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Classe demandée
+                    </span>
+
+                    <strong class="summary-value">
+
+                      {{
+                        createForm.get('targetClass')?.value ||
+                        'Non spécifié'
+                      }}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Cycle
+                    </span>
+
+                    <span class="summary-value">
+
+                      {{
+                        createForm.get('cycle')?.value ||
+                        'N/A'
+                      }}
+
+                    </span>
+
+                  </div>
+
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Section / Option
+                    </span>
+
+                    <span class="summary-value">
+
+                      {{
+                        createForm.get('section')?.value ||
+                        'N/A'
+                      }}
+
+                      /
+
+                      {{
+                        createForm.get('option')?.value ||
+                        'N/A'
+                      }}
+
+                    </span>
+
+                  </div>
+
+
+                  <div class="summary-row">
+
+                    <span class="summary-label">
+                      Vacation
+                    </span>
+
+                    <span class="badge-vacation">
+
+                      {{
+                        createForm.get('vacation')?.value
+                      }}
+
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- DOCUMENTS -->
+              <div class="summary-card">
+
+                <div class="summary-header">
+
+                  <i class="bi bi-folder-check"></i>
+
+                  Documents
+
+                </div>
+
+
+                <div class="summary-body">
+
+                  <div class="summary-document-count">
+
+                    <i class="bi bi-files"></i>
+
+                    <strong>
+                      {{ documentsArray.length }}
+                    </strong>
+
+                    <span>
+                      document(s) ajouté(s)
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- INFORMATION -->
+            <div class="confirmation-notice">
+
+              <i class="bi bi-info-circle-fill"></i>
+
+              <div>
+
+                <strong>
+                  Dernière étape
+                </strong>
+
+                <p>
+                  Après validation, vous pourrez renseigner
+                  les informations relatives au paiement des
+                  frais d'inscription.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        }
+
+      }
+
+    </form>
+
+
+    <!-- ============================================================
+         FOOTER
+    ============================================================ -->
+    <footer class="form-footer">
+
+
+      <button
+        type="button"
+        class="btn-premium btn-secondary"
+        [disabled]="currentStep() === 1"
+        (click)="previousStep()">
+
+        <i class="bi bi-arrow-left"></i>
+
+        Précédent
+
+      </button>
+
+
+      <div class="footer-actions">
+
+
+        @if (currentStep() < steps.length) {
+
+          <button
+            type="button"
+            class="btn-premium btn-primary"
+            [disabled]="!canGoNext()"
+            (click)="nextStep()">
+
+            Continuer
+
+            <i class="bi bi-arrow-right"></i>
+
+          </button>
+
+        }
+
+
+        @if (currentStep() === steps.length) {
+
+          <button
+            type="button"
+            class="btn-premium btn-success"
+            [disabled]="isProcessing()"
+            (click)="openPaymentModal()">
+
+            @if (isProcessing()) {
+
+              <span class="spinner-border spinner-border-sm"></span>
+
+              Traitement...
+
+            } @else {
+
+              <i class="bi bi-credit-card-2-front"></i>
+
+              Valider et passer au paiement
+
+            }
+
+          </button>
+
+        }
+
+      </div>
+
+    </footer>
+
+  </main>
+
+
+  <!-- ============================================================
+       MODALE PAIEMENT
+       IMPORTANT : CE N'EST PAS UN FORM HTML IMBRIQUÉ
+  ============================================================ -->
+  @if (isPaymentModalOpen()) {
+
+    <div
+      class="modal-overlay"
+      (click)="onPaymentOverlayClick($event)">
+
+      <div
+        class="modal-card payment-modal"
+        (click)="$event.stopPropagation()">
+
+
+        <!-- HEADER -->
+        <div class="modal-header">
+
+          <div>
+
+            <span class="modal-eyebrow">
+              ÉTAPE FINALE
+            </span>
+
+            <h3>
+
+              <i class="bi bi-wallet2"></i>
+
+              Règlement des frais d'inscription
+
+            </h3>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="btn-close-modal"
+            (click)="closePaymentModal()"
+            aria-label="Fermer">
+
+            &times;
+
+          </button>
+
+        </div>
+
+
+        <!-- BODY -->
+        <div class="modal-body">
+
+
+          <!-- MONTANT -->
+          <div class="payment-amount-box">
+
+            <div>
+
+              <span class="amount-label">
+                Frais de dossier
+              </span>
+
+              <span class="amount-description">
+                Frais administratifs d'inscription
+              </span>
+
+            </div>
+
+            <strong>
+              5.00 $
+            </strong>
+
+          </div>
+
+
+          <!-- PAIEMENT -->
+          <div [formGroup]="paymentForm">
+
+            <div class="form-group mb-4">
+
+              <label class="form-label required">
+                Moyen de paiement
+              </label>
+
+
+              <div class="radio-grid">
+
+
+                <button
+                  type="button"
+                  class="custom-radio-card"
+                  [class.selected]="
+                    paymentForm.get('paymentMethod')?.value === 'MOBILE_MONEY'
+                  "
+                  (click)="setPaymentMethod('MOBILE_MONEY')">
+
+                  <i class="bi bi-phone-vibrate radio-icon"></i>
+
+                  <span class="radio-title">
+                    Mobile Money
+                  </span>
+
+                  <span class="radio-description">
+                    M-Pesa, Airtel, Orange
+                  </span>
+
+                </button>
+
+
+                <button
+                  type="button"
+                  class="custom-radio-card"
+                  [class.selected]="
+                    paymentForm.get('paymentMethod')?.value === 'VISA'
+                  "
+                  (click)="setPaymentMethod('VISA')">
+
+                  <i class="bi bi-credit-card radio-icon"></i>
+
+                  <span class="radio-title">
+                    Carte Visa
+                  </span>
+
+                  <span class="radio-description">
+                    Visa / Mastercard
+                  </span>
+
+                </button>
+
+
+              </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label
+                for="paymentAccount"
+                class="form-label required">
+
+                Numéro téléphone / référence
+
+              </label>
+
+
+              <div class="input-icon-wrapper">
+
+                <i class="bi bi-credit-card-2-front"></i>
+
+                <input
+                  id="paymentAccount"
+                  type="text"
+                  formControlName="paymentAccount"
+                  class="form-control"
+                  placeholder="0814455824">
+
+              </div>
+
+
+              @if (
+                paymentForm.get('paymentAccount')?.touched &&
+                paymentForm.get('paymentAccount')?.invalid
+              ) {
+
+                <small class="field-error">
+                  Veuillez renseigner les informations de paiement.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- NOTE FINANCE -->
+            <div class="payment-info">
+
+              <i class="bi bi-info-circle"></i>
+
+              <span>
+                Les informations du paiement seront transmises
+                avec le dossier. Le traitement financier sera
+                intégré ultérieurement au Module Finance.
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- FOOTER -->
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn-premium btn-secondary"
+            (click)="closePaymentModal()">
+
+            Annuler
+
+          </button>
+
+
+          <button
+            type="button"
+            class="btn-premium btn-success"
+            [disabled]="paymentForm.invalid || isProcessing()"
+            (click)="submitCreateEnrollmentAndPayment()">
+
+            @if (isProcessing()) {
+
+              <span class="spinner-border spinner-border-sm"></span>
+
+              Enregistrement...
+
+            } @else {
+
+              <i class="bi bi-check-lg"></i>
+
+              Enregistrer le paiement
+
+            }
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</div>

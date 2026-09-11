@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+    <mat-dialog-content class="pt-2">
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Nom</mat-label>
+        <input matInput [(ngModel)]="data.name" placeholder="Saisir le nom..." required />
+      </mat-form-field>
+
+      @if (data.numericOrder !== undefined) {
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Ordre Numérique</mat-label>
+          <input matInput type="number" [(ngModel)]="data.numericOrder" />
+        </mat-form-field>
+      }
+
+      @if (data.hasDependents && data.dependentMessage) {
+        <div class="alert-info-disabled p-2 rounded border bg-light text-muted small mt-2">
+          <i class="pi pi-lock me-1"></i> {{ data.dependentMessage }}
+        </div>
+      }
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Annuler</button>
+      <button mat-flat-button color="primary" [disabled]="!data.name?.trim()" [mat-dialog-close]="data">
+        Enregistrer
+      </button>
+    </mat-dialog-actions>

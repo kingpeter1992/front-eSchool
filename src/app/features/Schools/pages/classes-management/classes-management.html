@@ -1,0 +1,452 @@
+<div class="campus-page">
+  <section class="campus-main-card">
+
+    <!-- HEADER / NAVIGATION PRINCIPALE PAR SUB-TABS -->
+    <div class="header-section">
+      <div class="header-content">
+        <div class="header-icon">
+          <i class="pi pi-sitemap"></i>
+        </div>
+        <div>
+          <div class="title-row">
+            <h1>Structure & Gestion Académique</h1>
+            <span class="badge-count">
+              @if (activeSubTab() === 'cycles') { {{ store.cycles().length }} Cycle(s) }
+              @else if (activeSubTab() === 'levels') { {{ allLevels().length }} Niveau(x) }
+              @else if (activeSubTab() === 'sections') { {{ allSections().length }} Section(s) }
+              @else { {{ store.classes().length }} Classe(s) }
+            </span>
+          </div>
+          <p class="text-sub">Configuration globale des cycles, niveaux d'études, sections et classes.</p>
+        </div>
+      </div>
+
+      <!-- Navigation par boutons dédiés -->
+      <div class="d-flex flex-wrap gap-2">
+        <button
+          type="button"
+          [class]="activeSubTab() === 'cycles' ? 'btn-premium-primary' : 'btn-premium-secondary'"
+          (click)="setSubTab('cycles')">
+          <i class="pi pi-sync"></i>
+          <span>Cycles</span>
+        </button>
+
+        <button
+          type="button"
+          [class]="activeSubTab() === 'levels' ? 'btn-premium-primary' : 'btn-premium-secondary'"
+          (click)="setSubTab('levels')">
+          <i class="pi pi-bookmark"></i>
+          <span>Niveaux</span>
+        </button>
+
+        <button
+          type="button"
+          [class]="activeSubTab() === 'sections' ? 'btn-premium-primary' : 'btn-premium-secondary'"
+          (click)="setSubTab('sections')">
+          <i class="pi pi-folder"></i>
+          <span>Sections & Options</span>
+        </button>
+
+        <button
+          type="button"
+          [class]="activeSubTab() === 'classes' ? 'btn-premium-primary' : 'btn-premium-secondary'"
+          (click)="setSubTab('classes')">
+          <i class="pi pi-users"></i>
+          <span>Classes</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SUB-TAB 1: CYCLES                          -->
+    <!-- ========================================== -->
+    @if (activeSubTab() === 'cycles') {
+      <div class="filter-card">
+        <div class="filter-left">
+          <h2 class="h6 m-0 font-weight-bold">Gestion des Cycles d'Enseignement</h2>
+          <small class="text-muted">Définissez les cycles principaux (Maternelle, Primaire, Secondaire...)</small>
+        </div>
+        <button type="button" class="btn-premium-primary" (click)="isCreateCycleModalOpen.set(!isCreateCycleModalOpen())">
+          <i class="pi pi-plus"></i>
+          <span>Nouveau Cycle</span>
+        </button>
+      </div>
+
+      @if (isCreateCycleModalOpen()) {
+        <div class="panel-form-premium mb-4">
+          <div class="panel-form-header">
+            <div class="d-flex align-items-center gap-2">
+              <i class="pi pi-plus-circle"></i>
+              <h3>Ajouter un Nouveau Cycle</h3>
+            </div>
+            <button type="button" class="btn-close-icon" (click)="isCreateCycleModalOpen.set(false)">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+          <form [formGroup]="cycleForm" (ngSubmit)="onAddCycle()" class="panel-form-body">
+            <div class="form-group-premium mb-3">
+              <label class="form-label-premium">Nom du cycle</label>
+              <input formControlName="name" class="form-control-premium" placeholder="ex: Primaire, Secondaire, Humanités..." />
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button type="button" class="btn-premium-secondary" (click)="isCreateCycleModalOpen.set(false)">Annuler</button>
+              <button type="submit" class="btn-premium-primary" [disabled]="cycleForm.invalid || store.isSubmitting()">
+                @if (store.isSubmitting()) { <i class="pi pi-spin pi-spinner"></i> }
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </div>
+      }
+
+      <ng-container *ngTemplateOutlet="fullTreeTemplate"></ng-container>
+    }
+
+    <!-- ========================================== -->
+    <!-- SUB-TAB 2: NIVEAUX D'ÉTUDES                 -->
+    <!-- ========================================== -->
+    @if (activeSubTab() === 'levels') {
+      <div class="filter-card">
+        <div class="filter-left">
+          <h2 class="h6 m-0 font-weight-bold">Gestion des Niveaux d'Études</h2>
+          <small class="text-muted">Rattachez les niveaux aux cycles existants (1ère Année, 2ème Année...)</small>
+        </div>
+        <button type="button" class="btn-premium-primary" (click)="isCreateLevelModalOpen.set(!isCreateLevelModalOpen())">
+          <i class="pi pi-plus"></i>
+          <span>Nouveau Niveau</span>
+        </button>
+      </div>
+
+      @if (isCreateLevelModalOpen()) {
+        <div class="panel-form-premium mb-4">
+          <div class="panel-form-header">
+            <div class="d-flex align-items-center gap-2">
+              <i class="pi pi-plus-circle"></i>
+              <h3>Ajouter un Nouveau Niveau</h3>
+            </div>
+            <button type="button" class="btn-close-icon" (click)="isCreateLevelModalOpen.set(false)">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          @if (store.cycles().length === 0) {
+            <div class="p-4">
+              <div class="alert-info-light">
+                <i class="pi pi-exclamation-triangle"></i>
+                <span>Aucun cycle existant. Veuillez d'abord créer un cycle avant d'ajouter un niveau.</span>
+              </div>
+            </div>
+          } @else {
+            <form [formGroup]="levelForm" (ngSubmit)="onAddLevel()" class="panel-form-body">
+              <div class="form-row-grid">
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Cycle parent</label>
+                  <div class="select-group-premium">
+                    <select formControlName="cycleId" class="form-select-premium">
+                      <option value="">Sélectionner un cycle...</option>
+                      @for (cycle of store.cycles(); track cycle.id) {
+                        <option [value]="cycle.id">{{ cycle.name }}</option>
+                      }
+                    </select>
+                    <i class="pi pi-chevron-down select-icon"></i>
+                  </div>
+                </div>
+
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Nom du niveau</label>
+                  <input formControlName="name" class="form-control-premium" placeholder="ex: 1ère Année, 6ème..." />
+                </div>
+
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Ordre numérique</label>
+                  <input type="number" formControlName="numericOrder" class="form-control-premium" min="1" />
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn-premium-secondary" (click)="isCreateLevelModalOpen.set(false)">Annuler</button>
+                <button type="submit" class="btn-premium-primary" [disabled]="levelForm.invalid || store.isSubmitting()">
+                  @if (store.isSubmitting()) { <i class="pi pi-spin pi-spinner"></i> }
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      }
+
+      <ng-container *ngTemplateOutlet="fullTreeTemplate"></ng-container>
+    }
+
+    <!-- ========================================== -->
+    <!-- SUB-TAB 3: SECTIONS & OPTIONS              -->
+    <!-- ========================================== -->
+    @if (activeSubTab() === 'sections') {
+      <div class="filter-card">
+        <div class="filter-left">
+          <h2 class="h6 m-0 font-weight-bold">Gestion des Sections & Options</h2>
+          <small class="text-muted">Définissez les orientations (ex: Section Scientifique -> Option Biologie)</small>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn-premium-secondary" (click)="isCreateSectionModalOpen.set(!isCreateSectionModalOpen())">
+            <i class="pi pi-folder-plus"></i>
+            <span>Nouvelle Section</span>
+          </button>
+          <button type="button" class="btn-premium-primary" (click)="isCreateOptionModalOpen.set(!isCreateOptionModalOpen())">
+            <i class="pi pi-plus"></i>
+            <span>Nouvelle Option</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- FORMULAIRE CRÉATION SECTION -->
+      @if (isCreateSectionModalOpen()) {
+        <div class="panel-form-premium mb-4">
+          <div class="panel-form-header">
+            <div class="d-flex align-items-center gap-2">
+              <i class="pi pi-plus-circle"></i>
+              <h3>Ajouter une Nouvelle Section</h3>
+            </div>
+            <button type="button" class="btn-close-icon" (click)="isCreateSectionModalOpen.set(false)">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          @if (store.cycles().length === 0) {
+            <div class="p-4">
+              <div class="alert-info-light">
+                <i class="pi pi-exclamation-triangle"></i>
+                <span>Aucun cycle existant. Veuillez d'abord créer un cycle.</span>
+              </div>
+            </div>
+          } @else {
+            <form [formGroup]="sectionForm" (ngSubmit)="onAddSection()" class="panel-form-body">
+              <div class="form-row-grid">
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Cycle parent</label>
+                  <div class="select-group-premium">
+                    <select formControlName="cycleId" class="form-select-premium">
+                      <option value="">Sélectionner un cycle...</option>
+                      @for (cycle of store.cycles(); track cycle.id) {
+                        <option [value]="cycle.id">{{ cycle.name }}</option>
+                      }
+                    </select>
+                    <i class="pi pi-chevron-down select-icon"></i>
+                  </div>
+                </div>
+
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Nom de la section</label>
+                  <input formControlName="name" class="form-control-premium" placeholder="ex: Scientifique, Littéraire..." />
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" class="btn-premium-secondary" (click)="isCreateSectionModalOpen.set(false)">Annuler</button>
+                <button type="submit" class="btn-premium-primary" [disabled]="sectionForm.invalid || store.isSubmitting()">
+                  @if (store.isSubmitting()) { <i class="pi pi-spin pi-spinner"></i> }
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      }
+
+      <!-- FORMULAIRE CRÉATION OPTION -->
+      @if (isCreateOptionModalOpen()) {
+        <div class="panel-form-premium mb-4">
+          <div class="panel-form-header">
+            <div class="d-flex align-items-center gap-2">
+              <i class="pi pi-plus-circle"></i>
+              <h3>Ajouter une Option Pédagogique</h3>
+            </div>
+            <button type="button" class="btn-close-icon" (click)="isCreateOptionModalOpen.set(false)">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+
+          @if (allSections().length === 0) {
+            <div class="p-4">
+              <div class="alert-info-light">
+                <i class="pi pi-exclamation-triangle"></i>
+                <span>Aucune section existante. Veuillez d'abord créer une section.</span>
+              </div>
+            </div>
+          } @else {
+            <form [formGroup]="optionForm" (ngSubmit)="onAddOption()" class="panel-form-body">
+              <div class="form-row-grid">
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Section parente</label>
+                  <div class="select-group-premium">
+                    <select formControlName="sectionId" class="form-select-premium">
+                      <option value="">Sélectionner une section...</option>
+                      @for (sec of allSections(); track sec.id) {
+                        <option [value]="sec.id">{{ sec.name }}</option>
+                      }
+                    </select>
+                    <i class="pi pi-chevron-down select-icon"></i>
+                  </div>
+                </div>
+
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Nom de l'option</label>
+                  <input formControlName="name" class="form-control-premium" placeholder="ex: Math-Physique, Biologie-Chimie..." />
+                </div>
+
+                <div class="form-group-premium">
+                  <label class="form-label-premium">Code unique</label>
+                  <input formControlName="code" class="form-control-premium" placeholder="ex: MATH-PHYS" />
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-3">
+                <button type="button" class="btn-premium-secondary" (click)="isCreateOptionModalOpen.set(false)">Annuler</button>
+                <button type="submit" class="btn-premium-primary" [disabled]="optionForm.invalid">Enregistrer</button>
+              </div>
+            </form>
+          }
+        </div>
+      }
+
+      <ng-container *ngTemplateOutlet="fullTreeTemplate"></ng-container>
+    }
+
+  </section>
+</div>
+
+<!-- ========================================== -->
+<!-- TEMPLATE RÉUTILISABLE DE L'ARBORESCENCE    -->
+<!-- ========================================== -->
+<ng-template #fullTreeTemplate>
+  <div class="w-100">
+    <div class="results-header mb-3">
+      <div>
+        <h2 class="h6 m-0 font-weight-bold">Aperçu par Cycles</h2>
+        <span class="text-muted extra-small">{{ store.cycles().length }} cycle(s) enregistré(s)</span>
+      </div>
+    </div>
+
+    @if (store.loading()) {
+      <div class="text-center p-4">
+        <i class="pi pi-spin pi-spinner text-primary-erp" style="font-size: 1.5rem;"></i>
+        <p class="text-muted mt-2 small">Chargement...</p>
+      </div>
+    } @else if (store.cycles().length > 0) {
+      <div class="cycles-cards-grid">
+        @for (cycle of store.cycles(); track cycle.id) {
+          <article class="cycle-mini-card">
+            <div class="card-header-mini">
+              <div class="title-group">
+                <div class="cycle-icon-badge">
+                  <i class="pi pi-sitemap"></i>
+                </div>
+                <h3>{{ cycle.name }}</h3>
+              </div>
+
+              <div class="action-group">
+                <button type="button" class="btn-mini-action" (click)="onEditCycle(cycle)" title="Modifier">
+                  <i class="pi pi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn-mini-action danger"
+                  [disabled]="(cycle.levels?.length || 0) > 0 || (cycle.sections?.length || 0) > 0"
+                  (click)="onDeleteCycle(cycle)"
+                  title="Supprimer">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body-mini">
+              <!-- Niveaux -->
+              <div class="mini-section">
+                <span class="mini-label">
+                  <i class="pi pi-bookmark text-primary"></i>
+                  Niveaux ({{ cycle.levels?.length || 0 }})
+                </span>
+
+                @if (cycle.levels && cycle.levels.length > 0) {
+                  <div class="pills-container">
+                    @for (lvl of cycle.levels; track lvl.id) {
+                      <span class="pill-badge-mini level-badge">
+                        <span>{{ lvl.name }}</span>
+                        <div class="pill-actions">
+                          <button type="button" class="pill-btn edit" (click)="onEditLevel(lvl)" title="Modifier">
+                            <i class="pi pi-pencil"></i>
+                          </button>
+                          <button type="button" class="pill-btn delete" (click)="onDeleteLevel(lvl)" title="Supprimer">
+                            <i class="pi pi-times"></i>
+                          </button>
+                        </div>
+                      </span>
+                    }
+                  </div>
+                } @else {
+                  <span class="empty-text">Aucun niveau</span>
+                }
+              </div>
+
+              <!-- Sections & Options -->
+              <div class="mini-section">
+                <span class="mini-label">
+                  <i class="pi pi-folder text-warning"></i>
+                  Sections ({{ cycle.sections?.length || 0 }})
+                </span>
+
+                @if (cycle.sections && cycle.sections.length > 0) {
+                  <div class="sections-tree-container">
+                    @for (sec of cycle.sections; track sec.id) {
+                      <div class="section-block mb-2">
+                        <!-- Badge Section -->
+                        <span class="pill-badge-mini section-badge">
+                          <strong>{{ sec.name }}</strong>
+                          <div class="pill-actions">
+                            <button type="button" class="pill-btn edit" (click)="onEditSection(sec)" title="Modifier">
+                              <i class="pi pi-pencil"></i>
+                            </button>
+                            <button type="button" class="pill-btn delete" (click)="onDeleteSection(sec)" title="Supprimer">
+                              <i class="pi pi-times"></i>
+                            </button>
+                          </div>
+                        </span>
+
+                        <!-- Sous-puces pour les Options rattachées -->
+                        @if (sec.options && sec.options.length > 0) {
+                          <div class="options-sub-container ms-3 mt-1 d-flex flex-wrap gap-1">
+                            @for (opt of sec.options; track opt.id) {
+                              <span class="pill-badge-mini option-badge">
+                                <span><i class="pi pi-cog me-1"></i>{{ opt.name }}</span>
+                                <div class="pill-actions">
+                                  <button type="button" class="pill-btn edit" (click)="onEditOption(opt)" title="Modifier">
+                                    <i class="pi pi-pencil"></i>
+                                  </button>
+                                  <button type="button" class="pill-btn delete" (click)="onDeleteOption(opt)" title="Supprimer">
+                                    <i class="pi pi-times"></i>
+                                  </button>
+                                </div>
+                              </span>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <span class="empty-text">Aucune section</span>
+                }
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-state-premium">
+        <div class="empty-icon-wrapper"><i class="pi pi-sitemap"></i></div>
+        <h3>Aucun cycle trouvé</h3>
+        <p class="text-sub">Créez votre premier cycle pour organiser vos niveaux et sections.</p>
+      </div>
+    }
+  </div>
+</ng-template>

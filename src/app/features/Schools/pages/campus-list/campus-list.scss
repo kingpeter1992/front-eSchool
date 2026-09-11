@@ -479,3 +479,13 @@
     width: 100%;
   }
 }
+.disabled-card {
+  opacity: 0.55;
+  filter: grayscale(80%);
+  cursor: not-allowed !important;
+  pointer-events: none; // Désactive directement les évènements de survol et de clic
+
+  .card-footer-premium {
+    color: #888;
+  }
+}

@@ -1,0 +1,367 @@
+<div class="classes-container">
+
+  <!-- ==========================================================
+       EN-TÊTE ET FILTRES
+  =========================================================== -->
+  <div class="action-header">
+    <div class="search-and-filters">
+      <!-- Recherche -->
+      <div class="search-input-wrapper">
+        <i class="pi pi-search"></i>
+        <input type="text" placeholder="Rechercher une classe ou salle..." [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)" />
+      </div>
+
+      <!-- Filtre cycle -->
+      <div class="filter-select-wrapper">
+        <i class="pi pi-filter"></i>
+        <select [value]="selectedFilterCycle()" (change)="selectedFilterCycle.set($any($event.target).value)">
+          <option value="ALL">Tous les cycles</option>
+          @for (c of cycles(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- Bouton création -->
+    @if (canEdit()) {
+    <button type="button" class="btn btn-primary" (click)="openCreate()">
+      <i class="pi pi-plus"></i>
+      <span>Créer une classe</span>
+    </button>
+    }
+  </div>
+
+  <!-- ==========================================================
+       GRILLE DES CLASSES
+  =========================================================== -->
+  @if (filteredClasses().length > 0) {
+  <div class="classes-grid">
+    @for (c of filteredClasses(); track c.id) {
+    <div class="class-card">
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <span class="badge badge-cycle">
+          <i class="pi pi-bookmark"></i> {{ c.cycleName || 'Cycle' }}
+        </span>
+
+        @if (canEdit()) {
+        <div class="card-actions">
+          <button type="button" class="btn-icon" title="Modifier" (click)="openEdit(c)">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button type="button" class="btn-icon danger" title="Supprimer" (click)="onDelete(c.id)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+        }
+      </div>
+
+      <!-- Title -->
+      <h4 class="class-title">{{ c.name }}</h4>
+
+      <!-- Details Grid -->
+      <div class="card-details">
+        @if (c.levelName) {
+        <div class="detail-item">
+          <i class="pi pi-book"></i>
+          <span>Niveau : <strong>{{ c.levelName }}</strong></span>
+        </div>
+        }
+
+        @if (c.sectionName) {
+        <div class="detail-item">
+          <i class="pi pi-th-large"></i>
+          <span>Section : <strong>{{ c.sectionName }}</strong></span>
+        </div>
+        }
+
+        @if (c.optionName) {
+        <div class="detail-item">
+          <i class="pi pi-list"></i>
+          <span>Option : <strong>{{ c.optionName }}</strong></span>
+        </div>
+        }
+
+        <div class="detail-item">
+          <i class="pi pi-building"></i>
+          <span>Salle : <strong>{{ c.roomName || 'Non assignée' }}</strong></span>
+        </div>
+
+        <div class="detail-item">
+          <i class="pi pi-clock"></i>
+          <span>Vacation :
+            <strong [class.text-sun]="c.shift === 'MORNING'" [class.text-moon]="c.shift === 'AFTERNOON'">
+              {{ c.shift === 'MORNING' ? 'Avant-midi' : 'Après-midi' }}
+            </strong>
+          </span>
+        </div>
+
+        <!-- Titulaire -->
+        <div class="detail-item teacher-item">
+          <i class="pi pi-user"></i>
+          @if (c.mainTeacherName) {
+          <span>Titulaire : <strong>{{ c.mainTeacherName }}</strong></span>
+          @if (canEdit()) {
+          <button type="button" class="btn-link" title="Changer de titulaire" (click)="openAssignTeacher(c)">
+            <i class="pi pi-file-edit"></i>
+          </button>
+          }
+          } @else {
+          <span>Titulaire : <em>Non assigné</em></span>
+          @if (canEdit()) {
+          <button type="button" class="btn-assign-teacher" (click)="openAssignTeacher(c)">
+            + Assigner
+          </button>
+          }
+          }
+        </div>
+      </div>
+
+      <!-- Section Taux de Remplissage & Effectif -->
+      <div class="occupancy-section">
+        <div class="occupancy-header">
+          <span class="occupancy-count">
+            <i class="pi pi-users"></i>
+            <strong>{{ c.enrolledCount || 0 }}</strong> / {{ c.maxCapacity || 0 }} élèves
+          </span>
+          <span class="occupancy-percentage" [class.full]="(c.occupancyRate || 0) >= 100">
+            {{ (c.occupancyRate || 0) | number:'1.0-1' }}%
+          </span>
+        </div>
+
+        <!-- Barre de progression -->
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" [style.width.%]="c.occupancyRate || 0"
+            [class.warning]="(c.occupancyRate || 0) >= 80 && (c.occupancyRate || 0) < 100"
+            [class.danger]="(c.occupancyRate || 0) >= 100"></div>
+        </div>
+      </div>
+
+    </div>
+    }
+  </div>
+  } @else {
+  <!-- Empty State -->
+  <div class="empty-state">
+    <div class="empty-icon-wrapper">
+      <i class="pi pi-folder-open"></i>
+    </div>
+    <h3>Aucune classe trouvée</h3>
+    <p>Aucune classe ne correspond à vos critères de recherche ou aucun enregistrement disponible.</p>
+    @if (canEdit()) {
+    <button type="button" class="btn btn-primary" (click)="openCreate()">
+      <i class="pi pi-plus"></i>
+      Créer la première classe
+    </button>
+    }
+  </div>
+  }
+</div>
+
+<!-- ============================================================
+     MODALE CRÉATION / ÉDITION
+============================================================= -->
+@if (isModalOpen()) {
+<div class="modal-backdrop" (click)="closeModal()">
+  <div class="class-modal" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <div class="modal-icon">
+          <i class="pi" [class.pi-plus]="!isEditMode()" [class.pi-pencil]="isEditMode()"></i>
+        </div>
+        <div>
+          <h3>{{ modalTitle() }}</h3>
+          <p>Configurez la structure pédagogique et les informations de la classe</p>
+        </div>
+      </div>
+
+      <button type="button" class="modal-close" [disabled]="isSubmitting()" (click)="closeModal()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <!-- FORM -->
+    <form [formGroup]="classForm" (ngSubmit)="onSubmit()" class="class-form">
+      <div class="modal-body">
+
+        <!-- SECTION 1: CASCADING STRUCTURE -->
+        <div class="form-section">
+          <div class="section-heading">
+            <div class="section-number">1</div>
+            <div>
+              <h4>Arborescence Académique</h4>
+              <p>Définissez le parcours de la classe (Cycle ➔ Niveau ➔ Section ➔ Option)</p>
+            </div>
+          </div>
+
+          <div class="form-grid dual-column">
+            <!-- 1. CYCLE -->
+            <div class="form-group">
+              <label for="cycleId">Cycle d'enseignement <span class="required">*</span></label>
+              <div class="select-wrapper">
+                <select id="cycleId" formControlName="cycleId" (change)="onCycleChange($any($event.target).value)"
+                  [class.invalid]="isInvalid('cycleId')">
+                  <option [ngValue]="null">-- Sélectionner un cycle --</option>
+                  @for (cycle of cycles(); track cycle.id) {
+                  <option [value]="cycle.id">{{ cycle.name }}</option>
+                  }
+                </select>
+              </div>
+              @if (isInvalid('cycleId')) {
+              <span class="error-message"><i class="pi pi-exclamation-circle"></i> Le cycle est obligatoire.</span>
+              }
+            </div>
+
+            <!-- 2. NIVEAU -->
+            <div class="form-group">
+              <label for="level">Niveau d'études <span class="required">*</span></label>
+              <div class="select-wrapper" [class.disabled-state]="!selectedCycleId()">
+                <select id="level" formControlName="levelId" (change)="onLevelChange()"
+                  [class.invalid]="isInvalid('levelId')">
+                  <option [ngValue]="null">
+                    {{ selectedCycleId() ? '-- Sélectionner un niveau --' : '🔒 Choisir d\'abord un cycle' }}
+                  </option>
+                  @for (level of filteredLevels(); track level.id) {
+                  <option [value]="level.id">{{ level.name }}</option>
+                  }
+                </select>
+              </div>
+              @if (isInvalid('levelId')) {
+              <span class="error-message"><i class="pi pi-exclamation-circle"></i> Le niveau est obligatoire.</span>
+              }
+            </div>
+
+            <!-- 3. SECTION -->
+            <div class="form-group">
+              <label for="section">Section <span class="optional">(Optionnel)</span></label>
+              <div class="select-wrapper" [class.disabled-state]="!selectedCycleId()">
+                <select id="section" formControlName="sectionId" (change)="onSectionChange($any($event.target).value)">
+                  <option [ngValue]="null">
+                    {{ selectedCycleId() ? '-- Sélectionner une section --' : '🔒 Choisir d\'abord un cycle' }}
+                  </option>
+                  @for (section of filteredSections(); track section.id) {
+                  <option [value]="section.id">{{ section.name }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!-- 4. OPTION -->
+            <div class="form-group">
+              <label for="option">Option Pédagogique <span class="optional">(Optionnel)</span></label>
+              <div class="select-wrapper" [class.disabled-state]="!selectedSectionId() || filteredOptions().length === 0">
+                <select id="option" formControlName="optionId">
+                  <option [ngValue]="null">
+                    {{ selectedSectionId() ? (filteredOptions().length > 0 ? '-- Sélectionner une option --' : 'Aucune option disponible') : '🔒 Choisir d\'abord une section' }}
+                  </option>
+                  @for (option of filteredOptions(); track option.id) {
+                  <option [value]="option.id">{{ option.name }} {{ option.code ? '(' + option.code + ')' : '' }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: CLASS DETAILS -->
+        <div class="form-section">
+          <div class="section-heading">
+            <div class="section-number">2</div>
+            <div>
+              <h4>Informations Complémentaires</h4>
+              <p>Identité de la classe, attribution de la salle et capacité d'accueil</p>
+            </div>
+          </div>
+
+          <div class="form-grid dual-column">
+            <!-- NOM DE LA CLASSE -->
+            <div class="form-group full-width">
+              <label for="name">Nom de la classe <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="pi pi-tag"></i>
+                <input id="name" type="text" formControlName="name" placeholder="Ex : 6ème Année A, Term. C..."
+                  [class.invalid]="isInvalid('name')" />
+              </div>
+              @if (isInvalid('name')) {
+              <span class="error-message"><i class="pi pi-exclamation-circle"></i> Le nom de la classe est obligatoire.</span>
+              }
+            </div>
+
+            <!-- SALLE -->
+            <div class="form-group">
+              <label for="roomId">Salle de classe <span class="required">*</span></label>
+              <div class="select-wrapper">
+                <select id="roomId" formControlName="roomId" (change)="onRoomChange($any($event.target).value)"
+                  [class.invalid]="isInvalid('roomId')">
+                  <option [ngValue]="null">-- Sélectionner une salle --</option>
+                  @for (room of availableRooms(); track room.id) {
+                  <option [value]="room.id">
+                    {{ room.name }} (Cap: {{ room.capacity || '-' }})
+                  </option>
+                  }
+                </select>
+              </div>
+              @if (isInvalid('roomId')) {
+              <span class="error-message"><i class="pi pi-exclamation-circle"></i> La salle est obligatoire.</span>
+              }
+            </div>
+
+            <!-- CRÉNEAU / VACATION -->
+            <div class="form-group">
+              <label for="shift">Vacation / Créneau <span class="required">*</span></label>
+              <div class="select-wrapper">
+                <select id="shift" formControlName="shift" [class.invalid]="isInvalid('shift')">
+                  <option value="MORNING">Avant-midi (Matin)</option>
+                  <option value="AFTERNOON">Après-midi</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- CAPACITÉ MAX -->
+            <div class="form-group full-width">
+              <label for="maxCapacity">Effectif Maximum <span class="required">*</span></label>
+              <div class="input-with-icon">
+                <i class="pi pi-users"></i>
+                <input id="maxCapacity" type="number" min="1" formControlName="maxCapacity"
+                  [placeholder]="classForm.get('roomId')?.value ? 'Hérité de la salle' : 'Saisir l\'effectif'"
+                  [class.invalid]="isInvalid('maxCapacity')" />
+              </div>
+              <small class="hint-text" *ngIf="classForm.get('roomId')?.value">
+                <i class="pi pi-info-circle"></i> La capacité dépend de la salle sélectionnée.
+              </small>
+              @if (isInvalid('maxCapacity')) {
+              <span class="error-message">
+                <i class="pi pi-exclamation-circle"></i> La capacité doit être d'au moins 1 élève.
+              </span>
+              }
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FOOTER -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" [disabled]="isSubmitting()" (click)="closeModal()">
+          Annuler
+        </button>
+
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting() || classForm.invalid">
+          @if (isSubmitting()) {
+          <i class="pi pi-spin pi-spinner"></i> Enregistrement...
+          } @else {
+          <i class="pi" [class.pi-check]="!isEditMode()" [class.pi-save]="isEditMode()"></i>
+          {{ isEditMode() ? 'Enregistrer les modifications' : 'Créer la classe' }}
+          }
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+}

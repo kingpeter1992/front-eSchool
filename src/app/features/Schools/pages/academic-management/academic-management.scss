@@ -1,0 +1,183 @@
+.academic-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f8fafc;
+  font-family: 'Inter', sans-serif;
+}
+
+/* En-tête Année Active */
+.active-year-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  color: #ffffff;
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.15);
+}
+
+.banner-info {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.icon-banner {
+  font-size: 2.2rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.75rem;
+  border-radius: 12px;
+}
+
+.banner-info h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+/* Cartes de sections */
+.section-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #0f172a;
+}
+
+.section-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Grille des périodes */
+.grid-periods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.period-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.period-card:hover {
+  border-color: #6366f1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
+}
+
+.period-card.locked {
+  background-color: #f8fafc;
+  opacity: 0.8;
+}
+
+.period-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.period-code {
+  font-weight: 700;
+  color: #4f46e5;
+  background: #e0e7ff;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.late-warning {
+  background-color: #fffbe3;
+  color: #b45309;
+  border: 1px solid #fef08a;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.775rem;
+  font-weight: 600;
+}
+
+/* Badges de statut */
+.status-pill {
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-pill.active, .status-pill.open_for_grading {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-pill.preparation, .status-pill.upcoming {
+  background-color: #fef9c3;
+  color: #a16207;
+}
+
+.status-pill.closed, .status-pill.locked {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Styles Modale à 80% de largeur */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card.modal-xl {
+  width: 80vw;
+  min-width: 80%;
+  max-width: 90vw;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}

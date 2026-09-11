@@ -1,0 +1,106 @@
+<div class="card">
+      @if (loading()) {
+        <div class="loading-state">
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Chargement des infrastructures...</span>
+        </div>
+      } @else if (buildings()) {
+        <div class="buildings-tab">
+          <div class="tab-header">
+            <div>
+              <h3>Infrastructures & Salles</h3>
+              <p class="subtitle">Gérez les bâtiments, les salles et leurs équipements.</p>
+            </div>
+            @if (canEdit()) {
+              <button class="btn btn-primary" (click)="openBuildingModal.emit()">
+                <i class="pi pi-plus"></i> Nouveau bâtiment
+              </button>
+            }
+          </div>
+
+          <div class="buildings-grid">
+            @for (b of buildings(); track b.id) {
+              <div class="building-card">
+                <div class="building-header">
+                  <div class="building-title">
+                    <div class="icon-wrapper">
+                      <i class="pi pi-building"></i>
+                    </div>
+                    <div>
+                      <h4>{{ b.name }}</h4>
+                      @if (b.code) {
+                        <span class="badge-code">{{ b.code }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="actions-group">
+                    @if (canEdit()) {
+                      <button class="btn btn-icon-sm" (click)="editBuilding.emit(b)" title="Modifier bâtiment">
+                        <i class="pi pi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-sm" (click)="addRoom.emit(b)">
+                        <i class="pi pi-plus"></i> Ajouter salle
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="rooms-container">
+                  <div class="rooms-header">
+                    <span class="label">Salles configurées</span>
+                    <span class="count-badge">{{ b.rooms?.length || 0 }}</span>
+                  </div>
+
+                  @if (!b.rooms || b.rooms.length === 0) {
+                    <div class="empty-rooms">
+                      <i class="pi pi-inbox"></i>
+                      <span>Aucune salle enregistrée dans ce bâtiment.</span>
+                    </div>
+                  } @else {
+                    <div class="rooms-grid">
+                      @for (room of b.rooms; track room.id) {
+                        <div class="room-card">
+                          <div class="room-main">
+                            <div class="room-icon">
+                              <i class="pi pi-door"></i>
+                            </div>
+                            <div class="room-info">
+                              <span class="room-name">{{ room.name }}</span>
+                              <span class="room-capacity">
+                                <i class="pi pi-users"></i> {{ room.capacity || '-' }} places
+                              </span>
+                            </div>
+                            <div class="room-actions">
+                              <button class="btn-equipment-badge" (click)="viewEquipments.emit(room)" title="Voir les équipements">
+                                <i class="pi pi-box"></i>
+                                <span>{{ room.equipments?.length || 0 }}</span>
+                              </button>
+
+                              @if (canEdit()) {
+                                <button class="btn-icon-ghost" (click)="editRoom.emit({ building: b, room })" title="Modifier salle">
+                                  <i class="pi pi-pencil"></i>
+                                </button>
+                                <button class="btn-icon-ghost" (click)="addEquipment.emit(room)" title="Ajouter du matériel">
+                                  <i class="pi pi-plus-circle"></i>
+                                </button>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-buildings">
+                <i class="pi pi-building"></i>
+                <h4>Aucun bâtiment enregistré</h4>
+                <p>Commencez par ajouter le premier bâtiment de ce campus.</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>

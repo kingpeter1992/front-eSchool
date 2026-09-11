@@ -1,0 +1,597 @@
+@if (campusStore.loading()) {
+<div class="loading-container">
+  <i class="pi pi-spin pi-spinner spinner"></i>
+  <span>Chargement des détails du campus...</span>
+</div>
+} @else if (campus()) {
+@let item = campus()!;
+
+<div class="campus-details-page">
+  <!-- HEADER -->
+  <header class="page-header">
+    <div class="header-left">
+      <button class="btn-icon" (click)="goBack()" title="Retour à la liste">
+        <i class="pi pi-arrow-left"></i>
+      </button>
+
+      <div class="header-avatar">
+        <i class="pi pi-building"></i>
+      </div>
+
+      <div class="header-info">
+        <div class="title-row">
+          <h1>{{ item.name }}</h1>
+          <span class="status-badge" [class.active]="item.status === 'ACTIVE'">
+            <span class="dot"></span>
+            {{ item.status === 'ACTIVE' ? 'Actif' : (item.status === 'SUSPENDED' ? 'Suspendu' : 'Inactif') }}
+          </span>
+        </div>
+        <p class="subtitle">
+          @if (item.code) {
+          <span class="code-pill"><i class="pi pi-hashtag"></i> {{ item.code }}</span>
+          <span class="separator">•</span>
+          }
+          <i class="pi pi-map-marker"></i> {{ item.address || 'Adresse non renseignée' }}, {{ item.city || '' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      @if (canEdit()) {
+      <button class="btn btn-secondary" (click)="isEditModalOpen.set(true)">
+        <i class="pi pi-pencil"></i> Modifier
+      </button>
+      }
+      <button class="btn btn-primary">
+        <i class="pi pi-cog"></i> Paramètres
+      </button>
+    </div>
+  </header>
+
+  <!-- STATS / KPI -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon blue"><i class="pi pi-users"></i></div>
+      <div class="kpi-data">
+        <span class="label">Capacité Totale</span>
+        <strong class="value">{{ item.totalCapacity || 0 }} places</strong>
+        <span class="sub-label">Élèves inscrits : 0</span>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon emerald"><i class="pi pi-user-edit"></i></div>
+      <div class="kpi-data">
+        <span class="label">Enseignants</span>
+        <strong class="value">0</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon orange"><i class="pi pi-sitemap"></i></div>
+      <div class="kpi-data">
+        <span class="label">Salles de classe</span>
+        <strong class="value">{{ availableCampusRooms().length }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon purple"><i class="pi pi-building"></i></div>
+      <div class="kpi-data">
+        <span class="label">Bâtiments</span>
+        <strong class="value">{{ campusStore.buildings()?.length || 0 }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar">
+    <button [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+      <i class="pi pi-info-circle"></i> Vue Générale
+    </button>
+    <button [class.active]="activeTab() === 'buildings'" (click)="setTab('buildings')">
+      <i class="pi pi-building"></i> Bâtiments & Salles
+    </button>
+    <button [class.active]="activeTab() === 'classes'" (click)="setTab('classes')">
+      <i class="pi pi-book"></i> Classes affectées
+    </button>
+    <button [class.active]="activeTab() === 'staff'" (click)="setTab('staff')">
+      <i class="pi pi-clock"></i> Horaires
+    </button>
+  </nav>
+
+  <!-- TAB CONTENT -->
+  <div class="tab-content">
+    @if (activeTab() === 'overview') {
+    <app-campus-overview-tab [campus]="campus()" />
+    }
+
+    @if (activeTab() === 'buildings') {
+    <app-campus-buildings-tab [buildings]="campusStore.buildings()" [loading]="campusStore.loading()"
+      [canEdit]="canEdit()" (openBuildingModal)="openBuildingModal()" (editBuilding)="openBuildingModal($event)"
+      (addRoom)="openRoomModal($event)" (editRoom)="openRoomModal($event.building, $event.room)"
+      (addEquipment)="openEquipmentModal($event)" (viewEquipments)="openViewEquipmentsModal($event)" />
+    }
+
+    @if (activeTab() === 'classes') {
+    <app-campus-classes-tab [classes]="campusClasses()" [cycles]="cycles()" [levels]="levels()" [sections]="sections()"
+      [options]="options()" [availableRooms]="availableCampusRooms()" [canEdit]="canEdit()"
+      (saveClass)="onSaveClass($event)" (deleteClass)="onDeleteClass($event)" />
+    }
+
+    @if (activeTab() === 'staff') {
+    <app-campus-schedules-tab [schedules]="campusStore.schedules()" [canEdit]="canEdit()"
+      (openScheduleModal)="openScheduleModal()" />
+    }
+  </div>
+
+  <!-- MODALE : ÉDITION DU CAMPUS -->
+  @if (isEditModalOpen()) {
+  <div class="modal-overlay" (click)="closeEditModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="pi pi-building"></i> Modifier le Campus</h3>
+        <button class="btn-close" (click)="closeEditModal()"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nom du Campus *</label>
+            <input type="text" [(ngModel)]="item.name" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Code</label>
+            <input type="text" [(ngModel)]="item.code" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Capacité Totale</label>
+            <input type="number" [(ngModel)]="item.totalCapacity" class="form-control" />
+          </div>
+          <div class="form-group full-width">
+            <label>Adresse</label>
+            <input type="text" [(ngModel)]="item.address" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Ville</label>
+            <input type="text" [(ngModel)]="item.city" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Téléphone</label>
+            <input type="text" [(ngModel)]="item.phone" class="form-control" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeEditModal()">Annuler</button>
+        <button class="btn btn-primary">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- MODALE : BÂTIMENT (CRÉATION / ÉDITION) -->
+  @if (isBuildingModalOpen()) {
+  <div class="modal-overlay" (click)="!campusStore.isSubmitting() && closeBuildingModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="pi pi-building"></i>
+          {{ selectedBuilding() ? 'Modifier le bâtiment' : 'Nouveau bâtiment' }}
+        </h3>
+        <button class="btn-close" [disabled]="campusStore.isSubmitting()" (click)="closeBuildingModal()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nom du bâtiment *</label>
+            <input type="text" [(ngModel)]="buildingForm.name" [disabled]="campusStore.isSubmitting()"
+              placeholder="ex: Bâtiment A, Pavillon Science" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Code / Sigle</label>
+            <input type="text" [(ngModel)]="buildingForm.code" [disabled]="campusStore.isSubmitting()"
+              placeholder="ex: BAT-A" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Nombre d'étages</label>
+            <input type="number" min="0" [(ngModel)]="buildingForm.floors" [disabled]="campusStore.isSubmitting()"
+              class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" [disabled]="campusStore.isSubmitting()" (click)="closeBuildingModal()">
+          Annuler
+        </button>
+
+        <button class="btn btn-primary" [disabled]="campusStore.isSubmitting() || !buildingForm.name"
+          (click)="saveBuilding()">
+          @if (campusStore.isSubmitting()) {
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Enregistrement...</span>
+          } @else {
+          <span>{{ selectedBuilding() ? 'Mettre à jour' : 'Créer' }}</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- MODALE : SALLE (CRÉATION / ÉDITION) -->
+  @if (isRoomModalOpen()) {
+  <div class="modal-overlay" (click)="!campusStore.isSubmitting() && closeRoomModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="pi pi-door"></i>
+          {{ selectedRoom() ? 'Modifier la salle' : 'Nouvelle salle' }}
+        </h3>
+        <button class="btn-close" [disabled]="campusStore.isSubmitting()" (click)="closeRoomModal()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nom / Numéro de la salle *</label>
+            <input type="text" [(ngModel)]="roomForm.name" [disabled]="campusStore.isSubmitting()"
+              placeholder="ex: Salle 101, Labo Info" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Capacité (Places)</label>
+            <input type="number" min="1" [(ngModel)]="roomForm.capacity" [disabled]="campusStore.isSubmitting()"
+              placeholder="30" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Type de salle</label>
+            <select [(ngModel)]="roomForm.type" [disabled]="campusStore.isSubmitting()" class="form-control">
+              <option value="CLASSROOM">Salle de classe</option>
+              <option value="LABORATORY">Laboratoire</option>
+              <option value="AMPHITHEATER">Amphithéâtre</option>
+              <option value="COMPUTER_ROOM">Salle informatique</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" [disabled]="campusStore.isSubmitting()" (click)="closeRoomModal()">
+          Annuler
+        </button>
+
+        <button class="btn btn-primary" [disabled]="campusStore.isSubmitting() || !roomForm.name" (click)="saveRoom()">
+          @if (campusStore.isSubmitting()) {
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Enregistrement...</span>
+          } @else {
+          <span>{{ selectedRoom() ? 'Mettre à jour' : 'Enregistrer' }}</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+<!-- MODALE : CRÉATION / ÉDITION DE CLASSE -->
+@if (isCreateClassModalOpen()) {
+  <div class="modal-overlay" (click)="closeCreateClassModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="pi pi-book"></i> {{ classForm.get('id')?.value ? 'Modifier la Classe' : 'Créer une Nouvelle Classe' }}</h3>
+        <button type="button" class="btn-close" (click)="closeCreateClassModal()"><i class="pi pi-times"></i></button>
+      </div>
+
+      <!-- Événement (ngSubmit) lié à onSaveClass -->
+      <form [formGroup]="classForm" (ngSubmit)="onSaveClass(classForm.value)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Cycle *</label>
+              <select formControlName="cycleId" class="form-control">
+                <option value="">Sélectionner un cycle</option>
+                @for (c of academicStore.cycles(); track c.id) {
+                  <option [value]="c.id">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Niveau *</label>
+              <select formControlName="levelId" class="form-control">
+                <option value="">Sélectionner un niveau</option>
+                @for (lvl of availableLevels(); track lvl.id) {
+                  <option [value]="lvl.id">{{ lvl.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Nom de la classe *</label>
+              <input type="text" formControlName="name" placeholder="ex: 7ème Année A" class="form-control" />
+            </div>
+
+            <div class="form-group">
+              <label>Salle d'affectation *</label>
+              <select formControlName="roomId" class="form-control">
+                <option value="">Sélectionner une salle</option>
+                @for (r of availableCampusRooms(); track r.id) {
+                  <option [value]="r.id">{{ r.buildingName }} - {{ r.name }} (Cap: {{ r.capacity || '-' }})</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Capacité Maximale *</label>
+              <input type="number" formControlName="maxCapacity" class="form-control" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateClassModal()">Annuler</button>
+
+          <!-- Désactivé si formulaire invalide ou soumission en cours -->
+          <button type="submit" class="btn btn-primary" [disabled]="classForm.invalid || classeStore.loading()">
+            @if (classeStore.loading()) {
+              <i class="pi pi-spin pi-spinner"></i> Enregistrement...
+            } @else {
+              Enregistrer
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+  <!-- MODALE : CONFIGURATION DES HORAIRES -->
+  @if (isScheduleModalOpen()) {
+  <div class="modal-overlay" (click)="closeScheduleModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="pi pi-clock"></i> Configuration des Horaires du Campus</h3>
+        <button class="btn-close" (click)="closeScheduleModal()"><i class="pi pi-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="schedules-edit-list">
+          @for (s of editableSchedules(); track s.dayOfWeek) {
+          <div class="schedule-edit-row">
+            <div class="day-toggle">
+              <input type="checkbox" [id]="'check-' + s.dayOfWeek" [(ngModel)]="s.isOpen" />
+              <label [for]="'check-' + s.dayOfWeek">{{ getDayLabel(s.dayOfWeek) }}</label>
+            </div>
+
+            @if (s.isOpen) {
+            <div class="time-inputs-group">
+              <div class="time-field">
+                <span>Matin :</span>
+                <input type="time" [(ngModel)]="s.morningStartTime" class="form-control-sm" />
+                <span>à</span>
+                <input type="time" [(ngModel)]="s.morningEndTime" class="form-control-sm" />
+              </div>
+              <div class="time-field">
+                <span>Soir :</span>
+                <input type="time" [(ngModel)]="s.eveningStartTime" class="form-control-sm" />
+                <span>à</span>
+                <input type="time" [(ngModel)]="s.eveningEndTime" class="form-control-sm" />
+              </div>
+            </div>
+            } @else {
+            <span class="text-closed">Fermé toute la journée</span>
+            }
+          </div>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeScheduleModal()">Annuler</button>
+        <button class="btn btn-primary" (click)="closeScheduleModal()">Enregistrer les horaires</button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- MODALE : VISUALISATION DES ÉQUIPEMENTS DE LA SALLE -->
+  @if (isViewEquipmentsModalOpen()) {
+  <div class="modal-overlay" (click)="closeViewEquipmentsModal()">
+    <div class="modal-container large-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="pi pi-list"></i>
+          Équipements - {{ selectedRoomForEquipment()?.name }}
+        </h3>
+
+        <div class="export-actions">
+          <button class="btn btn-pdf" (click)="exportPDF()">
+            <i class="pi pi-file-pdf"></i> Imprimer PDF
+          </button>
+          <button class="btn btn-excel" (click)="exportExcel()">
+            <i class="pi pi-file-excel"></i> Exporter Excel
+          </button>
+          <button class="btn-close" (click)="closeViewEquipmentsModal()">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <table class="table-equipments">
+          <thead>
+            <tr>
+              <th>Nom de l'équipement</th>
+              <th class="text-center">Quantité</th>
+              <th>État</th>
+              @if (canEdit()) {
+              <th class="text-end" style="width: 100px;">Actions</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of selectedRoomForEquipment()?.equipments || []; track item.id || $index) {
+            <tr>
+              <td>{{ item.name || item.name }}</td>
+              <td class="text-center">{{ item?.quantity ?? 1 }}</td>
+              <td>
+                <!-- ✅ Après (avec fallback '') -->
+                <span class="badge" [class]="(item?.state || 'good') | lowercase">
+                  {{ getStatusLabel(item?.state ?? '') }}
+                </span>
+              </td>
+              @if (canEdit()) {
+              <td class="text-end">
+                <div class="action-buttons">
+                  <button class="btn-icon edit-btn" (click)="openEditEquipmentModal(item)"
+                    title="Modifier l'équipement">
+                    <i class="pi pi-pencil"></i>
+                  </button>
+                  <button class="btn-icon delete-btn" (click)="onDeleteEquipment(item)" title="Supprimer l'équipement">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </div>
+              </td>
+              }
+            </tr>
+            } @empty {
+            <tr>
+              <td [attr.colspan]="canEdit() ? 4 : 3" class="text-center">
+                Aucun équipement enregistré dans cette salle.
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeViewEquipmentsModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- MODALE : ÉDITION D'UN ÉQUIPEMENT -->
+  @if (isEditEquipmentModalOpen()) {
+  <div class="modal-overlay" (click)="!campusStore.isSubmitting() && closeEditEquipmentModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="pi pi-file-edit"></i>
+          Modifier l'équipement
+        </h3>
+        <button class="btn-close" [disabled]="campusStore.isSubmitting()" (click)="closeEditEquipmentModal()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nom de l'équipement *</label>
+            <input type="text" [(ngModel)]="editForm.name" [disabled]="campusStore.isSubmitting()"
+              placeholder="ex: Projecteur, Tableau Blanc" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Quantité</label>
+            <input type="number" min="1" [(ngModel)]="editForm.quantity" [disabled]="campusStore.isSubmitting()"
+              class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>État du matériel</label>
+            <select [(ngModel)]="editForm.state" [disabled]="campusStore.isSubmitting()" class="form-control">
+              <option value="EXCELLENT">Neuf / Excellent</option>
+              <option value="GOOD">Bon état</option>
+              <option value="NEED_REPAIR">À réparer</option>
+              <option value="DAMAGED">Endommagé / HS</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" [disabled]="campusStore.isSubmitting()" (click)="closeEditEquipmentModal()">
+          Annuler
+        </button>
+        <button class="btn btn-primary" [disabled]="campusStore.isSubmitting() || !editForm.name"
+          (click)="saveEquipmentEdit()">
+          @if (campusStore.isSubmitting()) {
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Mise à jour...</span>
+          } @else {
+          <span>Enregistrer</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- MODALE : AJOUTER MATÉRIEL -->
+  @if (isEquipmentModalOpen()) {
+  <div class="modal-overlay" (click)="!campusStore.isSubmitting() && closeEquipmentModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>
+          <i class="pi pi-box"></i>
+          Ajouter du matériel dans {{ selectedRoomForEquipment()?.name }}
+        </h3>
+        <button class="btn-close" [disabled]="campusStore.isSubmitting()" (click)="closeEquipmentModal()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Nom de l'équipement *</label>
+            <input type="text" [(ngModel)]="equipmentForm.name" [disabled]="campusStore.isSubmitting()"
+              placeholder="ex: Projecteur, Tableau Blanc, Micro" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Quantité</label>
+            <input type="number" min="1" [(ngModel)]="equipmentForm.quantity" [disabled]="campusStore.isSubmitting()"
+              class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>État du matériel</label>
+            <select [(ngModel)]="equipmentForm.state" [disabled]="campusStore.isSubmitting()" class="form-control">
+              <option value="EXCELLENT">Neuf / Excellent</option>
+              <option value="GOOD">Bon état</option>
+              <option value="NEED_REPAIR">À réparer</option>
+              <option value="DAMAGED">Endommagé / HS</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" [disabled]="campusStore.isSubmitting()" (click)="closeEquipmentModal()">
+          Annuler
+        </button>
+        <button class="btn btn-primary" [disabled]="campusStore.isSubmitting() || !equipmentForm.name"
+          (click)="saveEquipment()">
+          @if (campusStore.isSubmitting()) {
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Enregistrement...</span>
+          } @else {
+          <span>Ajouter</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+</div>
+}

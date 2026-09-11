@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthResponse, SchoolInfo, User } from '../models/User';
+import { AcademicYear } from '../../features/Schools/models/academic.model';
 
 
 @Injectable({
@@ -11,6 +12,7 @@ export class StorageService {
   private readonly REFRESH_TOKEN_KEY = 'eschool_refresh_token';
   private readonly USER_KEY = 'eschool_user';
   private readonly SCHOOL_KEY = 'eschool_school';
+  private readonly ACADEMIC_YEAR_KEY = 'active_academic_year';
 
   saveAuth(response: AuthResponse): void {
     localStorage.setItem(this.TOKEN_KEY, response.token);
@@ -42,7 +44,8 @@ export class StorageService {
     }
 
     try {
-   //   console.log('user',JSON.parse(data) as AuthResponse)
+
+      console.log('user',JSON.parse(data) as AuthResponse)
       return JSON.parse(data) as AuthResponse;
 
     } catch {
@@ -76,10 +79,23 @@ export class StorageService {
     return !!this.getToken();
   }
 
+
+  // Sauvegarder l'année active après la connexion
+  saveActiveAcademicYear(year: AcademicYear| null): void {
+    localStorage.setItem(this.ACADEMIC_YEAR_KEY, JSON.stringify(year));
+  }
+
+  // Récupérer l'année active
+  getActiveAcademicYear(): AcademicYear | null {
+    const data = localStorage.getItem(this.ACADEMIC_YEAR_KEY);
+    return data ? JSON.parse(data) : null;
+  }
+
   clean(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     localStorage.removeItem(this.SCHOOL_KEY);
+    localStorage.removeItem(this.ACADEMIC_YEAR_KEY);
   }
 }

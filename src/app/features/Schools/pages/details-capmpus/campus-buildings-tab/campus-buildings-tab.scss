@@ -1,0 +1,196 @@
+.buildings-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #0f172a; }
+    .subtitle { margin: 0.25rem 0 0; font-size: 0.85rem; color: #64748b; }
+  }
+
+  .buildings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    .building-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.25rem;
+
+      .building-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        .building-title {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          .icon-wrapper {
+            width: 40px;
+            height: 40px;
+            background: #eff6ff;
+            color: #2563eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+          }
+
+          h4 { margin: 0; font-size: 1rem; font-weight: 700; color: #0f172a; }
+          .badge-code {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+          }
+        }
+
+        .actions-group {
+          display: flex;
+          gap: 0.5rem;
+        }
+      }
+
+      .rooms-container {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 1rem;
+
+        .rooms-header {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+
+          .label { font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+          .count-badge {
+            background: #e2e8f0;
+            color: #334155;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+          }
+        }
+
+        .rooms-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 0.75rem;
+
+          .room-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+
+            .room-main {
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+
+              .room-icon { color: #64748b; font-size: 1.1rem; }
+              .room-info {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+
+                .room-name { font-weight: 600; font-size: 0.875rem; color: #0f172a; }
+                .room-capacity { font-size: 0.75rem; color: #64748b; }
+              }
+
+              .room-actions {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+              }
+            }
+          }
+        }
+
+        .empty-rooms {
+          text-align: center;
+          padding: 1rem;
+          color: #94a3b8;
+          font-size: 0.85rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .empty-buildings {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+
+    i { font-size: 2.5rem; color: #94a3b8; margin-bottom: 0.5rem; }
+    h4 { margin: 0; color: #1e293b; font-size: 1.1rem; }
+    p { margin: 0.25rem 0 0; color: #64748b; font-size: 0.875rem; }
+  }
+}
+
+/* Boutons secondaires & d'action */
+.btn-outline-sm {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #334155;
+  &:hover { background: #f1f5f9; }
+}
+
+.btn-icon-sm {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #475569;
+  &:hover { background: #f8fafc; }
+}
+
+.btn-icon-ghost {
+  background: transparent;
+  border: none;
+  padding: 0.35rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #64748b;
+  &:hover { color: #2563eb; background: #f1f5f9; }
+}
+
+.btn-equipment-badge {
+  background: #f1f5f9;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  &:hover { background: #e2e8f0; }
+}

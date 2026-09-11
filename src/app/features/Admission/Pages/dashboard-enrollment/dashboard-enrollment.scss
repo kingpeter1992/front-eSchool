@@ -1,0 +1,1097 @@
+@use '../../../../../styles/variables' as *;
+
+$slate-900: #0f172a;
+$slate-700: #334155;
+$slate-500: #64748b;
+$slate-400: #94a3b8;
+$slate-200: #e2e8f0;
+$slate-100: #f1f5f9;
+$slate-50: #f8fafc;
+
+$indigo: #4f46e5;
+$green: #16a34a;
+$orange: #d97706;
+$blue: #2563eb;
+$red: #dc2626;
+
+
+// ============================================================
+// PAGE
+// ============================================================
+
+.enrollment-page {
+
+  padding: 2rem;
+
+  min-height: 100vh;
+
+  background: $slate-50;
+
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
+
+  color: $slate-900;
+}
+
+
+// ============================================================
+// HEADER
+// ============================================================
+
+.page-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 1.5rem;
+
+  margin-bottom: 1.75rem;
+}
+
+
+.header-left {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 1rem;
+}
+
+
+.header-icon {
+
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background: rgba($indigo, .1);
+
+  color: $indigo;
+
+  font-size: 1.35rem;
+}
+
+
+.title-line {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: .65rem;
+}
+
+
+.page-header h1 {
+
+  margin: 0;
+
+  font-size: 1.55rem;
+
+  font-weight: 800;
+
+  letter-spacing: -.03em;
+}
+
+
+.page-header p {
+
+  margin: .25rem 0 0;
+
+  color: $slate-500;
+
+  font-size: .875rem;
+}
+
+
+.count-badge {
+
+  min-width: 30px;
+  height: 25px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0 .55rem;
+
+  border-radius: 20px;
+
+  background: rgba($indigo, .1);
+
+  color: $indigo;
+
+  font-size: .75rem;
+
+  font-weight: 700;
+}
+
+
+// ============================================================
+// BUTTON
+// ============================================================
+
+.btn-primary {
+
+  border: none;
+
+  border-radius: 10px;
+
+  padding: .7rem 1.1rem;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: .5rem;
+
+  background: $indigo;
+
+  color: white;
+
+  font-size: .85rem;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 5px 14px rgba($indigo, .22);
+
+  transition: .2s ease;
+
+  &:hover {
+
+    background: darken($indigo, 5%);
+
+    transform: translateY(-1px);
+
+    box-shadow:
+      0 8px 18px rgba($indigo, .28);
+  }
+}
+
+
+// ============================================================
+// KPI
+// ============================================================
+
+.kpi-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(6, minmax(0, 1fr));
+
+  gap: .9rem;
+
+  margin-bottom: 1.4rem;
+}
+
+
+.kpi-card {
+
+  min-width: 0;
+
+  padding: 1rem;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: .8rem;
+
+  background: white;
+
+  border: 1px solid $slate-200;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 3px 10px rgba(15, 23, 42, .035);
+
+  transition: .2s ease;
+
+  &:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+      0 8px 20px rgba(15, 23, 42, .07);
+  }
+}
+
+
+.kpi-icon {
+
+  width: 40px;
+  height: 40px;
+
+  flex: 0 0 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 11px;
+
+  font-size: 1.05rem;
+}
+
+
+.kpi-card > div:last-child {
+
+  min-width: 0;
+}
+
+
+.kpi-card span {
+
+  display: block;
+
+  color: $slate-500;
+
+  font-size: .68rem;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: .035em;
+}
+
+
+.kpi-card strong {
+
+  display: block;
+
+  margin-top: .15rem;
+
+  font-size: 1.35rem;
+
+  line-height: 1.1;
+
+  font-weight: 800;
+}
+
+
+.kpi-card small {
+
+  display: block;
+
+  margin-top: .2rem;
+
+  color: $slate-400;
+
+  font-size: .68rem;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+// KPI COLORS
+
+.kpi-card.total {
+
+  .kpi-icon {
+
+    background: rgba($indigo, .1);
+
+    color: $indigo;
+  }
+}
+
+
+.kpi-card.pending {
+
+  .kpi-icon {
+
+    background: rgba($orange, .1);
+
+    color: $orange;
+  }
+
+  strong {
+    color: $orange;
+  }
+}
+
+
+.kpi-card.reviewing {
+
+  .kpi-icon {
+
+    background: rgba($blue, .1);
+
+    color: $blue;
+  }
+
+  strong {
+    color: $blue;
+  }
+}
+
+
+.kpi-card.accepted,
+.kpi-card.enrolled {
+
+  .kpi-icon {
+
+    background: rgba($green, .1);
+
+    color: $green;
+  }
+
+  strong {
+    color: $green;
+  }
+}
+
+
+.kpi-card.rejected {
+
+  .kpi-icon {
+
+    background: rgba($red, .1);
+
+    color: $red;
+  }
+
+  strong {
+    color: $red;
+  }
+}
+
+
+// ============================================================
+// FILTER
+// ============================================================
+
+.filter-card {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 1rem;
+
+  padding: .8rem;
+
+  margin-bottom: 1.35rem;
+
+  background: white;
+
+  border: 1px solid $slate-200;
+
+  border-radius: 13px;
+
+  box-shadow:
+    0 3px 10px rgba(15, 23, 42, .035);
+}
+
+
+.search-box {
+
+  position: relative;
+
+  flex: 1;
+}
+
+
+.search-box i {
+
+  position: absolute;
+
+  left: .9rem;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: $slate-400;
+
+  font-size: .9rem;
+}
+
+
+.search-box input {
+
+  width: 100%;
+
+  height: 42px;
+
+  padding: 0 1rem 0 2.5rem;
+
+  border: 1px solid $slate-200;
+
+  border-radius: 9px;
+
+  background: $slate-50;
+
+  color: $slate-900;
+
+  font-size: .84rem;
+
+  outline: none;
+
+  transition: .2s ease;
+
+  &:focus {
+
+    background: white;
+
+    border-color: rgba($indigo, .5);
+
+    box-shadow:
+      0 0 0 3px rgba($indigo, .1);
+  }
+}
+
+
+.filter-select {
+
+  position: relative;
+
+  width: 190px;
+}
+
+
+.filter-select i {
+
+  position: absolute;
+
+  left: .85rem;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: $slate-400;
+
+  pointer-events: none;
+}
+
+
+.filter-select select {
+
+  width: 100%;
+
+  height: 42px;
+
+  padding: 0 2rem 0 2.4rem;
+
+  border: 1px solid $slate-200;
+
+  border-radius: 9px;
+
+  background: $slate-50;
+
+  color: $slate-700;
+
+  font-size: .82rem;
+
+  cursor: pointer;
+
+  outline: none;
+}
+
+
+// ============================================================
+// RESULT HEADER
+// ============================================================
+
+.results-header {
+
+  margin-bottom: .75rem;
+}
+
+
+.results-header h2 {
+
+  margin: 0;
+
+  font-size: 1rem;
+
+  font-weight: 800;
+}
+
+
+.results-header span {
+
+  display: block;
+
+  margin-top: .2rem;
+
+  color: $slate-500;
+
+  font-size: .75rem;
+}
+
+
+// ============================================================
+// TABLE
+// ============================================================
+
+.table-card {
+
+  background: white;
+
+  border: 1px solid $slate-200;
+
+  border-radius: 15px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 4px 14px rgba(15, 23, 42, .04);
+}
+
+
+.table-responsive {
+
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+
+table {
+
+  width: 100%;
+
+  border-collapse: collapse;
+
+  min-width: 950px;
+}
+
+
+thead {
+
+  background: $slate-50;
+
+  border-bottom: 1px solid $slate-200;
+}
+
+
+th {
+
+  padding: .8rem 1rem;
+
+  text-align: left;
+
+  color: $slate-500;
+
+  font-size: .67rem;
+
+  font-weight: 800;
+
+  letter-spacing: .05em;
+
+  white-space: nowrap;
+}
+
+
+td {
+
+  padding: .85rem 1rem;
+
+  border-bottom: 1px solid $slate-100;
+
+  font-size: .8rem;
+
+  color: $slate-700;
+
+  vertical-align: middle;
+}
+
+
+tbody tr:last-child td {
+
+  border-bottom: none;
+}
+
+
+// ============================================================
+// CLICKABLE ROW
+// ============================================================
+
+.clickable-row {
+
+  cursor: pointer;
+
+  transition:
+    background .15s ease,
+    box-shadow .15s ease;
+
+  &:hover {
+
+    background: rgba($indigo, .025);
+
+    td:first-child {
+
+      color: $indigo;
+    }
+
+    .btn-view {
+
+      background: $indigo;
+
+      color: white;
+
+      transform: translateX(2px);
+    }
+  }
+}
+
+
+// ============================================================
+// STUDENT
+// ============================================================
+
+.student-cell {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: .7rem;
+}
+
+
+.student-avatar {
+
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: $slate-100;
+
+  color: $slate-500;
+}
+
+
+.student-cell strong {
+
+  display: block;
+
+  font-size: .82rem;
+
+  font-weight: 700;
+}
+
+
+.student-cell small {
+
+  display: block;
+
+  margin-top: .15rem;
+
+  color: $slate-400;
+
+  font-size: .7rem;
+}
+
+
+// ============================================================
+// DATA
+// ============================================================
+
+.registration-number {
+
+  padding: .3rem .5rem;
+
+  border-radius: 6px;
+
+  background: $slate-100;
+
+  color: $slate-700;
+
+  font-family: monospace;
+
+  font-size: .72rem;
+
+  font-weight: 700;
+}
+
+
+.data-with-icon {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: .4rem;
+
+  color: $slate-700;
+
+  white-space: nowrap;
+}
+
+
+.data-with-icon i {
+
+  color: $slate-400;
+}
+
+
+.class-badge {
+
+  display: inline-flex;
+
+  padding: .3rem .55rem;
+
+  border-radius: 6px;
+
+  background: rgba($indigo, .07);
+
+  color: $indigo;
+
+  font-size: .72rem;
+
+  font-weight: 700;
+}
+
+
+.not-assigned {
+
+  color: $slate-400;
+
+  font-size: .72rem;
+
+  font-style: italic;
+}
+
+
+// ============================================================
+// STATUS
+// ============================================================
+
+.status-badge {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: .4rem;
+
+  padding: .35rem .6rem;
+
+  border-radius: 20px;
+
+  font-size: .7rem;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+.status-dot {
+
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+}
+
+
+.status-pending {
+
+  background: rgba($orange, .09);
+
+  color: $orange;
+
+  .status-dot {
+    background: $orange;
+  }
+}
+
+
+.status-reviewing {
+
+  background: rgba($blue, .09);
+
+  color: $blue;
+
+  .status-dot {
+    background: $blue;
+  }
+}
+
+
+.status-accepted,
+.status-enrolled {
+
+  background: rgba($green, .09);
+
+  color: $green;
+
+  .status-dot {
+    background: $green;
+  }
+}
+
+
+.status-rejected {
+
+  background: rgba($red, .09);
+
+  color: $red;
+
+  .status-dot {
+    background: $red;
+  }
+}
+
+
+// ============================================================
+// ACTION
+// ============================================================
+
+.action-cell {
+
+  text-align: right;
+}
+
+
+.btn-view {
+
+  width: 32px;
+  height: 32px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 1px solid $slate-200;
+
+  border-radius: 8px;
+
+  background: white;
+
+  color: $slate-500;
+
+  cursor: pointer;
+
+  transition: .2s ease;
+}
+
+
+// ============================================================
+// LOADING
+// ============================================================
+
+.loading-state {
+
+  min-height: 300px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  gap: .7rem;
+
+  color: $slate-500;
+
+  font-size: .85rem;
+}
+
+
+.spin {
+
+  font-size: 1.4rem;
+
+  animation: spin 1s linear infinite;
+}
+
+
+@keyframes spin {
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+// ============================================================
+// EMPTY
+// ============================================================
+
+.empty-state {
+
+  min-height: 330px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 3rem;
+}
+
+
+.empty-icon {
+
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-bottom: 1rem;
+
+  border-radius: 50%;
+
+  background: $slate-100;
+
+  color: $slate-400;
+
+  font-size: 1.5rem;
+}
+
+
+.empty-state h3 {
+
+  margin: 0;
+
+  font-size: 1rem;
+
+  font-weight: 800;
+}
+
+
+.empty-state p {
+
+  margin: .35rem 0 1.2rem;
+
+  color: $slate-500;
+
+  font-size: .8rem;
+}
+
+
+// ============================================================
+// RESPONSIVE
+// ============================================================
+
+@media (max-width: 1400px) {
+
+  .kpi-grid {
+
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 768px) {
+
+  .enrollment-page {
+
+    padding: 1rem;
+  }
+
+  .page-header {
+
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .btn-primary {
+
+    width: 100%;
+
+    justify-content: center;
+  }
+
+  .kpi-grid {
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-card {
+
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .filter-select {
+
+    width: 100%;
+  }
+}
+
+
+@media (max-width: 480px) {
+
+  .kpi-grid {
+
+    grid-template-columns: 1fr;
+  }
+
+  .header-left {
+
+    align-items: flex-start;
+  }
+
+  .header-icon {
+
+    width: 42px;
+    height: 42px;
+  }
+
+  .page-header h1 {
+
+    font-size: 1.25rem;
+  }
+}

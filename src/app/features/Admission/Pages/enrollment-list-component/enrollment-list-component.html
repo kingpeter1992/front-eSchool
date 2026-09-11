@@ -1,0 +1,219 @@
+<div class="assignment-page">
+
+  <!-- HEADER -->
+  <header class="page-header">
+    <div class="header-left">
+      <button type="button" class="btn-back" (click)="back()" title="Retour">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div>
+        <div class="breadcrumb">
+          <span>Inscriptions</span>
+          <i class="bi bi-chevron-right"></i>
+          <strong>Affectation en classe</strong>
+        </div>
+        <h1>Affectation & Capacity Management</h1>
+        <p>Répartition des élèves inscrits dans les classes de l'établissement.</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI CARDS -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon indigo"><i class="bi bi-people"></i></div>
+      <div class="kpi-data">
+        <span class="kpi-label">Total inscrits</span>
+        <strong class="kpi-value">{{ totalEnrolled() }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon amber"><i class="bi bi-person-exclamation"></i></div>
+      <div class="kpi-data">
+        <span class="kpi-label">Sans classe</span>
+        <strong class="kpi-value">{{ totalUnassigned() }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon blue"><i class="bi bi-door-open"></i></div>
+      <div class="kpi-data">
+        <span class="kpi-label">Classes ouvertes</span>
+        <strong class="kpi-value">{{ totalAvailableClasses() }}</strong>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-icon green"><i class="bi bi-person-plus"></i></div>
+      <div class="kpi-data">
+        <span class="kpi-label">Places disponibles</span>
+        <strong class="kpi-value">{{ totalAvailableSeats() }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABLEAU & FILTRES -->
+  <section class="card-premium">
+    <div class="filter-bar">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input
+          type="text"
+          placeholder="Rechercher un élève, matricule..."
+          [value]="searchTerm()"
+          (input)="searchTerm.set($any($event.target).value)">
+      </div>
+
+      <div class="filter-actions">
+        <select [value]="selectedClassFilter()" (change)="selectedClassFilter.set($any($event.target).value)">
+          <option value="ALL">Tous les statuts d'affectation</option>
+          <option value="UNASSIGNED">Non affectés uniquement</option>
+          <option value="ASSIGNED">Déjà affectés</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Élève</th>
+            <th>Matricule</th>
+            <th>Campus / Année</th>
+            <th>Classe actuelle</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (student of filteredStudents(); track student.id) {
+            <tr>
+              <td>
+                <div class="student-cell">
+                  <div class="student-avatar">{{ getStudentInitials(student) }}</div>
+                  <div class="student-info">
+                    <strong>{{ getStudentFullName(student) }}</strong>
+                    <span>{{ student.parentName || 'Parent non renseigné' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="code-badge">{{ student.registrationNo || student.id }}</span>
+              </td>
+              <td>
+                <div class="meta-cell">
+                  <strong>{{ student.campusName || 'Campus Principal' }}</strong>
+                  <span>{{ student.academicYearName || '2025-2026' }}</span>
+                </div>
+              </td>
+              <td>
+                @if (student.className || student.schoolName) {
+                  <span class="class-badge assigned">
+                    <i class="bi bi-diagram-3"></i>
+                    {{ student.className || student.className }}
+                  </span>
+                } @else {
+                  <span class="class-badge unassigned">
+                    <i class="bi bi-hourglass-split"></i>
+                    Non affecté
+                  </span>
+                }
+              </td>
+              <td class="text-end">
+                <button type="button" class="btn-action btn-outline" (click)="openAssignmentModal(student)">
+                  <i class="bi bi-pencil-square"></i>
+                  {{ (student.className || student.className) ? 'Modifier' : 'Affecter' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-cell">
+                <i class="bi bi-inbox"></i>
+                <p>Aucun élève trouvé selon les critères sélectionnés.</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- MODAL AFFECTATION -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <div>
+            <span class="section-kicker">Affectation en classe</span>
+            <h2>{{ getStudentFullName(selectedStudent()) }}</h2>
+          </div>
+          <button type="button" class="btn-close" (click)="closeModal()"><i class="bi bi-x"></i></button>
+        </header>
+
+        <form [formGroup]="assignmentForm" (ngSubmit)="submitAssignment()" class="modal-body">
+          @if (assignmentError()) {
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle"></i>
+              <span>{{ assignmentError() }}</span>
+            </div>
+          }
+
+          <div class="form-group">
+            <label>Classe cible</label>
+            <select formControlName="classId">
+              <option value="">Sélectionner une classe</option>
+              @for (c of classesList(); track c.id) {
+                <option [value]="c.id" [disabled]="c.isFull && !assignmentForm.get('overrideCapacity')?.value">
+                  {{ c.name }} — {{ c.currentStudents }}/{{ c.maxCapacity }} élèves ({{ c.availableSeats }} places)
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- AVERTISSEMENT / REGLE METIER DE CAPACITE -->
+          @if (selectedTargetClass()) {
+            <div class="capacity-status" [class.full]="selectedTargetClass()?.isFull">
+              <div class="capacity-info">
+                <i [class]="selectedTargetClass()?.isFull ? 'bi bi-x-circle' : 'bi bi-check-circle'"></i>
+                <span>
+                  Capacité : <strong>{{ selectedTargetClass()?.currentStudents }}/{{ selectedTargetClass()?.maxCapacity }}</strong>
+                  ({{ selectedTargetClass()?.availableSeats }} places libres)
+                </span>
+              </div>
+
+              @if (selectedTargetClass()?.isFull) {
+                <div class="override-box">
+                  <label class="checkbox-label">
+                    <input type="checkbox" formControlName="overrideCapacity">
+                    <span>Accorder une dérogation administrateur (Dépassement de capacité)</span>
+                  </label>
+
+                  @if (assignmentForm.get('overrideCapacity')?.value) {
+                    <textarea
+                      formControlName="overrideReason"
+                      placeholder="Motif obligatoire de la dérogation..."
+                      rows="2">
+                    </textarea>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <footer class="modal-footer">
+            <button type="button" class="btn-action btn-outline" (click)="closeModal()">Annuler</button>
+            <button type="submit" class="btn-action btn-primary" [disabled]="isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner-sm"></span>
+              } @else {
+                <span>Valider l'affectation</span>
+              }
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  }
+
+</div>

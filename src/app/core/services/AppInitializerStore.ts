@@ -5,123 +5,103 @@ import { SplashStore } from './SplashStore';
 import { SubscriptionDashboardStore } from '../../Admin/Service/suscription/SubscriptionDashboardStore';
 import { SchoolStore } from '../../features/Schools/services/school.store';
 import { RbacStore } from './RbacStore';
-import { Role } from '../models/User';
+import { Role, SchoolInfo } from '../models/User';
 import { SchoolResponse } from '../../features/Schools/models/school.model';
+import { AcademicStore } from '../../features/Schools/services/academic-structure/academic.store';
+import { CampusStore } from '../../features/Schools/services/campus/campus.store';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppInitializerStore {
-  private readonly splash = inject(SplashStore);
+private readonly splash = inject(SplashStore);
   private readonly schoolStore = inject(SchoolStore);
   private readonly subscriptionStore = inject(SubscriptionDashboardStore);
   private readonly rbacStore = inject(RbacStore);
+  private readonly academicStore = inject(AcademicStore);
+  private readonly campusStore = inject(CampusStore);
 
-  initialize(
+
+
+
+initialize(
     roles: (Role | string)[],
     school?: SchoolResponse | null,
-    permissions?: string[],
+    permissions?: string[]
   ): Observable<any> {
     this.splash.show('Préparation de votre espace...');
 
-    const roleKeys = roles.map((r) => (typeof r === 'string' ? r : r.id || r.slug || r.name));
-
-    console.log('🔐 Rôles détectés :', roleKeys);
+    const roleKeys = roles.map((r) => (typeof r === 'string' ? r : r.slug || r.name || r.id));
+    const isSuperAdmin = roleKeys.includes('ROLE_SUPER_ADMIN') || roleKeys.includes('SUPER_ADMIN');
+    const isAdminEcole = roleKeys.includes('ROLE_ADMIN_ECOLE') || roleKeys.includes('ADMIN_ECOLE');
 
     /**
-     * =====================================================
-     * 👑 SUPER ADMIN
-     * =====================================================
+     * 👑 SUPER ADMIN : Pré-chargement des données globales
      */
-    if (roleKeys.includes('ROLE_SUPER_ADMIN') || roleKeys.includes('SUPER_ADMIN')) {
+    if (isSuperAdmin) {
       return forkJoin({
-        // 1. Configurations système
         config: timer(200).pipe(
-          tap(() => this.splash.update('Chargement des configurations...', 25)),
+          tap(() => this.splash.update('Chargement des configurations...', 20))
         ),
-
-        // 2. Toutes les écoles
-        schools: this.schoolStore.loadSchools(true).pipe(
-          tap(() => this.splash.update('Chargement des établissements...', 50)),
-          catchError((err) => {
-            console.warn('⚠️ Impossible de pré-charger les écoles :', err);
-
-            return of(null);
-          }),
+        schools: this.schoolStore.loadSchools(false).pipe(
+          tap(() => this.splash.update('Chargement des établissements...', 40)),
+          catchError(() => of(null))
         ),
-
-        // 3. RBAC
         rbac: this.rbacStore.loadRbacCache().pipe(
-          tap(() => this.splash.update('Chargement des rôles et permissions...', 75)),
-          catchError((err) => {
-            console.warn('⚠️ Impossible de pré-charger la matrice RBAC :', err);
-
-            return of(null);
-          }),
+          tap(() => this.splash.update('Chargement des rôles et permissions...', 70)),
+          catchError(() => of(null))
         ),
-
-        // 4. Statistiques abonnements
-        subscriptions: this.subscriptionStore.fetchStatsObservable(true).pipe(
-          tap(() => this.splash.update("Chargement des statistiques d'abonnement...", 90)),
-          catchError((err) => {
-            console.warn('⚠️ Impossible de pré-charger les souscriptions :', err);
-
-            return of(null);
-          }),
-        ),
+        subscriptions: this.subscriptionStore.fetchStatsObservable(false).pipe(
+          tap(() => this.splash.update("Chargement des abonnements...", 90)),
+          catchError(() => of(null))
+        )
       }).pipe(
         tap(() => this.splash.update('Bienvenue 👋', 100)),
         delay(300),
-        tap(() => this.splash.hide()),
+        tap(() => this.splash.hide())
       );
     }
 
     /**
-     * =====================================================
-     * 🏫 ADMIN ÉCOLE
-     * =====================================================
+     * 🏫 ADMIN ÉCOLE : Charger uniquement le contexte de son établissement
      */
-    if (roleKeys.includes('ROLE_ADMIN_ECOLE') || roleKeys.includes('ADMIN_ECOLE')) {
+    if (isAdminEcole && school?.id) {
       return forkJoin({
-        config: timer(200).pipe(
-          tap(() => this.splash.update('Préparation de votre établissement...', 25)),
+        school: this.schoolStore.loadMySchool(school).pipe(
+          tap(() => this.splash.update('Chargement de votre établissement...', 30)),
+          catchError(() => of(null))
         ),
-
-        school: school
-          ? this.schoolStore.loadMySchool(school).pipe(
-              tap(() => this.splash.update('Chargement de votre établissement...', 60)),
-              catchError((err) => {
-                console.warn('⚠️ Impossible de charger votre établissement :', err);
-
-                return of(null);
-              }),
-            )
-          : of(null),
-
+        years: this.academicStore.loadYearsObservable(school.id).pipe(
+          tap(() => this.splash.update('Chargement des années académiques...', 50)),
+          catchError(() => of(null))
+        ),
+        cycles: this.academicStore.loadCyclesObservable(school.id).pipe(
+          tap(() => this.splash.update('Chargement de la structure académique...', 70)),
+          catchError(() => of(null))
+        ),
+        campuses: this.campusStore.loadCampusesObservable(school.id).pipe(
+          tap(() => this.splash.update('Chargement des campus...', 85)),
+          catchError(() => of(null))
+        ),
         rbac: this.rbacStore.MyloadRbacCache(roles, permissions ?? []).pipe(
-          tap(() => this.splash.update('Chargement de vos rôles et permissions...', 85)),
-          catchError((err) => {
-            console.warn('⚠️ Impossible de charger les permissions :', err);
-
-            return of(null);
-          }),
-        ),
+          tap(() => this.splash.update('Chargement de vos permissions...', 95)),
+          catchError(() => of(null))
+        )
       }).pipe(
         tap(() => this.splash.update('Bienvenue 👋', 100)),
         delay(300),
-        tap(() => this.splash.hide()),
+        tap(() => this.splash.hide())
       );
     }
+
     /**
-     * =====================================================
-     * 👤 AUTRES UTILISATEURS
-     * =====================================================
+     * 👤 AUTRES RÔLES
      */
     return timer(300).pipe(
-      tap(() => this.splash.update('Préparation de votre espace...', 80)),
       tap(() => this.splash.update('Bienvenue 👋', 100)),
-      delay(300),
-      tap(() => this.splash.hide()),
+      delay(200),
+      tap(() => this.splash.hide())
     );
   }
+
 }

@@ -35,48 +35,54 @@ export interface MenuItemCustom {
   styleUrl: './main-layout.css',
 })
 export class MainLayout implements OnInit {
-  items1: MenuItem[] | undefined;
+  items1: any[] | undefined;
   sidebarOpen = true;
 
   readonly auth = inject(AuthStoreService);
   readonly router = inject(Router);
 
-  // Détermine si l'utilisateur est un Super Admin
-  isSuperAdmin = computed(() => {
-    const user = this.auth.user();
-    if (!user || !user.user?.roles) return false;
+  // 1. Extraction sécurisée des rôles de l'utilisateur (prend en compte la racine ou l'objet user)
+  private userRolesList = computed<string[]>(() => {
+    const userObj = this.auth.user();
+    if (!userObj) return [];
 
-    const userRoles = user.user.roles.map(r => typeof r === 'string' ? r : r.id || r.slug || r.name);
-    return userRoles.some(r => r === 'SUPER_ADMIN' || r === 'ROLE_SUPER_ADMIN');
+    // Support des deux structures : userObj.roles OU userObj.user.roles
+    const rawRoles: (Role | string)[] = userObj.roles || userObj.user?.roles || [];
+
+    return rawRoles.map((r) => {
+      if (typeof r === 'string') return r;
+      return r.slug || r.name || r.id || '';
+    });
   });
 
-  // Nom et logo affichés dynamiquement selon le profil
+  // 2. Détermine si l'utilisateur est un Super Admin
+  isSuperAdmin = computed(() => {
+    const roles = this.userRolesList();
+    return roles.includes('SUPER_ADMIN') || roles.includes('ROLE_SUPER_ADMIN');
+  });
+
+  // Nom et logo affichés dynamiquement
   displaySchoolName = computed(() => {
-    const user = this.auth.user();
-    if (this.isSuperAdmin() && !user?.school?.name) {
+    const userObj = this.auth.user();
+    if (this.isSuperAdmin() && !userObj?.school?.name) {
       return 'Administration Centrale';
     }
-    return user?.school?.name || 'E-School Management';
+    return userObj?.school?.name || 'E-School Management';
   });
 
   displayLogoUrl = computed(() => {
-    const user = this.auth.user();
-    return user?.school?.logoUrl || null;
+    const userObj = this.auth.user();
+    return userObj?.school?.logoUrl || null;
   });
 
-  // Configuration des éléments du menu
+  // Configuration du menu
   menuItems: MenuItemCustom[] = [
+
     {
       label: 'Tableau de bord',
       icon: 'pi pi-chart-pie',
-      route: '/dashboard',
-      roles: ['ROLE_SUPER_ADMIN']
-    },
-     {
-      label: 'Tableau de bord',
-      icon: 'pi pi-chart-pie',
       route: '/admin_ecole',
-      roles: ['ROLE_ADMIN_ECOLE']
+      roles: ['ROLE_ADMIN_ECOLE','ROLE_ADMIN']
     },
     {
       label: 'Administration eSchool',
@@ -89,12 +95,12 @@ export class MainLayout implements OnInit {
           route: 'admin/users',
           roles: ['ROLE_SUPER_ADMIN']
         },
-        {
-          label: 'Rôles & Permissions',
-          icon: 'pi pi-shield',
-          route: 'admin/roles',
-          roles: ['ROLE_SUPER_ADMIN']
-        },
+        // {
+        //   label: 'Rôles & Permissions',
+        //   icon: 'pi pi-shield',
+        //   route: 'admin/roles',
+        //   roles: ['ROLE_SUPER_ADMIN']
+        // },
         {
           label: 'Établissements',
           icon: 'pi pi-building',
@@ -107,36 +113,62 @@ export class MainLayout implements OnInit {
           route: 'admin/subscription',
           roles: ['ROLE_SUPER_ADMIN']
         },
-        {
-          label: 'Paramètres système',
-          icon: 'pi pi-sliders-h',
-          route: 'admin/settings',
-          roles: ['ROLE_SUPER_ADMIN']
-        }
+        // {
+        //   label: 'Paramètres système',
+        //   icon: 'pi pi-sliders-h',
+        //   route: 'admin/settings',
+        //   roles: ['ROLE_SUPER_ADMIN']
+        // }
       ]
     },
     {
-      label: 'Pédagogie',
-      icon: 'pi pi-book',
-      roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT'],
+      label: 'Inscription',
+      icon: 'pi pi-user',
+      roles: ['ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT','ROLE_ADMIN'],
       children: [
         {
-          label: 'Classes',
+          label: 'Dasboar inscrit',
           icon: 'pi pi-th-large',
-          route: '/pedagogy/classes',
-          roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE']
+          route: '/enrollments',
+          roles: [ 'ROLE_ADMIN_ECOLE','ROLE_ADMIN']
         },
         {
-          label: 'Matières',
+          label: 'Inscription',
           icon: 'pi pi-bookmark',
-          route: '/pedagogy/subjects',
-          roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE']
+          route: '/enrollments/affecationenrolled',
+          roles: [ 'ROLE_ADMIN_ECOLE','ROLE_ADMIN']
         },
         {
           label: 'Emploi du temps',
           icon: 'pi pi-calendar',
           route: '/pedagogy/schedule',
-          roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT', 'ROLE_ELEVE']
+          roles: [ 'ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT', 'ROLE_ELEVE','ROLE_ADMIN']
+        }
+      ]
+    },
+
+     {
+      label: 'Pédagogie',
+      icon: 'pi pi-book',
+      roles: ['ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT','ROLE_ADMIN'],
+      children: [
+        {
+          label: 'Classes',
+          icon: 'pi pi-th-large',
+          route: 'classesmanagement',
+          roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE','ROLE_ADMIN']
+        },
+        {
+          label: 'Matières',
+          icon: 'pi pi-bookmark',
+          route: '/pedagogy/subjects',
+          roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE','ROLE_ADMIN']
+        },
+        {
+          label: 'Emploi du temps',
+          icon: 'pi pi-calendar',
+          route: '/pedagogy/schedule',
+          roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT', 'ROLE_ELEVE','ROLE_ADMIN']
         }
       ]
     },
@@ -144,13 +176,13 @@ export class MainLayout implements OnInit {
       label: 'Finances',
       icon: 'pi pi-wallet',
       route: '/finances',
-      roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE']
+      roles: [ 'ROLE_ADMIN_ECOLE']
     },
     {
       label: 'Communication',
       icon: 'pi pi-comments',
       route: '/communications',
-      roles: ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT', 'ROLE_PARENT']
+      roles: ['ROLE_ADMIN_ECOLE', 'ROLE_ENSEIGNANT', 'ROLE_PARENT']
     },
     {
       label: 'Gestion users',
@@ -161,43 +193,46 @@ export class MainLayout implements OnInit {
           label: 'Utilisateurs',
           icon: 'pi pi-users',
           route: 'admin/users',
-          roles: ['ROLE_ADMIN_ECOLE'],
+          roles: ['ROLE_ADMIN_ECOLE']
         },
-
         {
-          label: 'Mon ecole',
+          label: 'Mon école',
           icon: 'pi pi-building',
           route: 'admin/schools',
-      roles: ['ROLE_ADMIN_ECOLE'],
+          roles: ['ROLE_ADMIN_ECOLE']
         },
         {
-          label: 'Mon abonement',
+          label: 'Mon abonnement',
           icon: 'pi pi-shield',
           route: 'admin/subscription',
-      roles: ['ROLE_ADMIN_ECOLE'],
-        },
-
+          roles: ['ROLE_ADMIN_ECOLE']
+        }
       ]
-    },
+    }
   ];
 
-  // Menu filtré dynamiquement selon les rôles de l'utilisateur
+  // Menu filtré dynamiquement selon les rôles
   filteredMenuItems = computed(() => {
     return this.menuItems
-      .filter(item => this.hasRole(item.roles))
-      .map(item => ({
+      .filter((item) => this.hasRole(item.roles))
+      .map((item) => ({
         ...item,
-        children: item.children ? item.children.filter(child => this.hasRole(child.roles)) : []
+        children: item.children ? item.children.filter((child) => this.hasRole(child.roles)) : []
       }));
   });
 
   ngOnInit(): void {
-    const user = this.auth.user();
-    const initials = user ? `${user.user.firstName?.charAt(0) || ''}${user.user.lastName?.charAt(0) || ''}` : 'U';
-    const fullName = user ? `${user.user.firstName || ''} ${user.user.lastName || ''}` : 'Administrateur';
+    const userObj = this.auth.user();
 
-    const rawRole = user?.user?.roles?.[0];
-    const roleDisplay = typeof rawRole === 'string' ? rawRole : rawRole?.name || rawRole?.slug || 'ADMIN';
+    // Les informations personnelles sont portées par l'utilisateur authentifié.
+    const firstName = userObj?.user?.firstName || '';
+    const lastName = userObj?.user?.lastName || '';
+
+    const initials = (firstName || lastName) ? `${firstName.charAt(0)}${lastName.charAt(0)}` : 'U';
+    const fullName = (firstName || lastName) ? `${firstName} ${lastName}`.trim() : 'Utilisateur';
+
+    const roles = this.userRolesList();
+    const roleDisplay = roles[0] || 'UTILISATEUR';
 
     this.items1 = [
       {
@@ -219,15 +254,17 @@ export class MainLayout implements OnInit {
     item.expanded = !item.expanded;
   }
 
-  // Méthode générique de vérification de rôles
-  hasRole(allowedRoles: (Role | string)[]): boolean {
-    const user = this.auth.user();
-    if (!user || !user.user?.roles) return false;
+  // Vérification sécurisée des rôles
+  hasRole(allowedRoles?: (Role | string)[]): boolean {
+    if (!allowedRoles || allowedRoles.length === 0) return true;
 
-    const allowedRoleIds = allowedRoles.map(r => typeof r === 'string' ? r : r.id || r.slug || r.name);
-    const userRoleIds = user.user.roles.map(r => typeof r === 'string' ? r : r.id || r.slug || r.name);
+    const userRoles = this.userRolesList();
+    const allowedRoleSlugs = allowedRoles.map((r) => {
+      if (typeof r === 'string') return r;
+      return r.slug || r.name || r.id || '';
+    });
 
-    return userRoleIds.some(userRole => allowedRoleIds.includes(userRole));
+    return userRoles.some((userRole) => allowedRoleSlugs.includes(userRole));
   }
 
   logout(): void {

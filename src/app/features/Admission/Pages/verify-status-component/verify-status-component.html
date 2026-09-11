@@ -1,0 +1,130 @@
+<div class="verify-container">
+  <div class="verify-card">
+    <div class="header">
+      <h1>eSchool — Suivi de Candidature</h1>
+      <p>Entrez votre numéro de dossier pour vérifier l'état de votre inscription</p>
+    </div>
+
+    <!-- CHAMP DE RECHERCHE -->
+    <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="search-box">
+      <input
+        type="text"
+        formControlName="registrationNo"
+        placeholder="Ex: ENR-2026-8902"
+        class="form-input"
+      />
+      <button type="submit" class="btn-search" [disabled]="searchForm.invalid || isLoading()">
+        {{ isLoading() ? 'Vérification...' : 'Rechercher' }}
+      </button>
+    </form>
+
+    <!-- MESSAGE D'ERREUR -->
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- RÉSULTAT DU SUIVI -->
+    @if (result(); as info) {
+      <div class="status-result">
+        <div class="info-header">
+          <div>
+            <h3>{{ info.candidateFullName }}</h3>
+            <span class="registration-tag">N° {{ info.registrationNo }}</span>
+          </div>
+          <span class="badge" [ngClass]="info.status.toLowerCase()">
+            {{ info.statusLabel }}
+          </span>
+        </div>
+
+        <!-- TIMELINE D'AVANCEMENT -->
+        <div class="progress-stepper">
+          <div class="step" [class.active]="info.stepNumber >= 1">
+            <div class="circle">1</div>
+            <span>Soumis</span>
+          </div>
+          <div class="line" [class.active]="info.stepNumber >= 2"></div>
+
+          <div class="step" [class.active]="info.stepNumber >= 2">
+            <div class="circle">2</div>
+            <span>En révision</span>
+          </div>
+          <div class="line" [class.active]="info.stepNumber >= 3"></div>
+
+          <div class="step" [class.active]="info.stepNumber >= 3">
+            <div class="circle">3</div>
+            <span>Décision</span>
+          </div>
+        </div>
+
+        <!-- COMMENTAIRES OU INSTRUCTIONS ADMIN -->
+        @if (info.remarks) {
+          <div class="remarks-box">
+            <strong>Note de l'administration :</strong>
+            <p>{{ info.remarks }}</p>
+          </div>
+        }
+
+        <!-- BOUTON DE TÉLÉCHARGEMENT PDF -->
+        <div class="actions-bar my-3 text-end">
+          <button type="button" class="btn-pdf" (click)="downloadReceiptPdf()" [disabled]="isGeneratingPdf()">
+            <i class="bi bi-file-earmark-pdf-fill"></i>
+            {{ isGeneratingPdf() ? 'Génération du PDF...' : 'Télécharger le Reçu PDF (A4)' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- DOCUMENT REÇU A4 (GÉNÉRATION PDF) -->
+      <div id="receipt-pdf-content" class="a4-document">
+        <header class="doc-header">
+          <div class="school-brand">
+            <div class="logo-box">eSchool</div>
+            <div>
+              <h2>{{ info.schoolName || 'eSchool Management' }}</h2>
+              <p>Campus : <strong>{{ info.campusName || 'Principal' }}</strong></p>
+            </div>
+          </div>
+          <div class="doc-meta">
+            <span class="doc-title">REÇU DE CANDIDATURE</span>
+            <span class="doc-no">N° {{ info.registrationNo }}</span>
+          </div>
+        </header>
+
+        <hr class="divider" />
+
+        <div class="doc-body">
+          <div class="section-title">Informations de l'Élève</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Nom complet :</span>
+              <span class="value">{{ info.candidateFullName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Date de soumission :</span>
+              <span class="value">{{ info.submissionDate }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Statut actuel :</span>
+              <span class="badge-pdf" [ngClass]="info.status.toLowerCase()">
+                {{ info.statusLabel }}
+              </span>
+            </div>
+          </div>
+
+          @if (info.remarks) {
+            <div class="remarks-pdf">
+              <strong>Décision / Note de l'administration :</strong>
+              <p>{{ info.remarks }}</p>
+            </div>
+          }
+        </div>
+
+        <footer class="doc-footer">
+          <p>Document généré électroniquement le {{ todayDate | date:'dd/MM/yyyy HH:mm' }}.</p>
+          <p>Pour vérifier l'authenticité de ce document, flashez le code ou visitez le portail de suivi.</p>
+        </footer>
+      </div>
+    }
+  </div>
+</div>

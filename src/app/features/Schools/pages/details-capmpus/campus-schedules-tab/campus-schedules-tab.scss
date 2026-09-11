@@ -1,0 +1,119 @@
+.schedule-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+
+  .card-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+
+    .header-title-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .header-icon-box {
+        width: 42px;
+        height: 42px;
+        background: #f0fdf4;
+        color: #16a34a;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+      }
+
+      h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+      p { margin: 0.15rem 0 0; font-size: 0.8rem; color: #64748b; }
+    }
+
+    .btn-action-edit {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      &:hover { background: #f8fafc; }
+    }
+  }
+
+  .schedule-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    .schedule-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.25rem;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 8px;
+
+      &.closed-day {
+        opacity: 0.6;
+        background: #f1f5f9;
+      }
+
+      .day-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        font-weight: 600;
+        color: #0f172a;
+        font-size: 0.9rem;
+
+        .day-indicator {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #10b981;
+        }
+      }
+
+      .vacations-wrapper {
+        display: flex;
+        gap: 1rem;
+
+        .vacation-pill {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-size: 0.825rem;
+          color: #475569;
+          background: #ffffff;
+          padding: 0.35rem 0.75rem;
+          border-radius: 6px;
+          border: 1px solid #e2e8f0;
+
+          i { font-size: 0.85rem; }
+          &.morning i { color: #f59e0b; }
+          &.evening i { color: #6366f1; }
+          strong { color: #0f172a; }
+        }
+      }
+
+      .badge-closed-tag {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+    }
+  }
+}

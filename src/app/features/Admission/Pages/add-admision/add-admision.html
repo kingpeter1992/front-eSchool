@@ -1,0 +1,137 @@
+@if (isCreateModalOpen()) {
+<div
+  class="modal-backdrop"
+  (click)="closeCreateModal()"
+  (keydown.escape)="closeCreateModal()"
+  tabindex="0"
+  role="button"
+  aria-label="Fermer la fenêtre modale">
+
+  <div
+    class="modal-card"
+    (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title">
+
+    <header class="modal-header">
+      <h2 id="modal-title">Nouvelle demande d'inscription</h2>
+      <button type="button" class="btn-close" (click)="closeCreateModal()" aria-label="Fermer">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </header>
+
+    <form [formGroup]="createForm" (ngSubmit)="submitCreateEnrollment()" class="modal-body">
+
+      <!-- PHOTO (PRÉVISUALISATION LOCALE) -->
+      <div class="photo-upload-section">
+        <div class="avatar-preview">
+          @if (photoPreviewUrl()) {
+            <img [src]="photoPreviewUrl()" alt="Portrait du candidat" class="avatar-img" />
+          } @else {
+            <div class="avatar-placeholder">
+              <i class="bi bi-camera-fill"></i>
+            </div>
+          }
+        </div>
+
+        <input
+          type="file"
+          id="photoFileInput"
+          #fileInput
+          (change)="onPhotoSelected($event)"
+          accept="image/*"
+          hidden />
+
+        <button type="button" class="btn-outline btn-sm mt-2" (click)="fileInput.click()">
+          <i class="bi bi-upload me-1"></i>
+          {{ selectedPhotoFile() ? 'Changer la photo' : 'Sélectionner une photo' }}
+        </button>
+      </div>
+
+      <!-- INFOS CANDIDAT -->
+      <div class="row g-3">
+        <div class="col-md-6 form-group">
+          <label for="candidateFirstName" class="form-label">Prénom *</label>
+          <input
+            type="text"
+            id="candidateFirstName"
+            formControlName="candidateFirstName"
+            class="form-control"
+            placeholder="Ex: Jean" />
+        </div>
+
+        <div class="col-md-6 form-group">
+          <label for="candidateLastName" class="form-label">Nom *</label>
+          <input
+            type="text"
+            id="candidateLastName"
+            formControlName="candidateLastName"
+            class="form-control"
+            placeholder="Ex: Dupont" />
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label for="candidateEmail" class="form-label">Email de notification *</label>
+        <input
+          type="email"
+          id="candidateEmail"
+          formControlName="candidateEmail"
+          class="form-control"
+          placeholder="Pour la réception du numéro de dossier" />
+      </div>
+
+      <!-- SIMULATION DU PAIEMENT -->
+      <div class="payment-box">
+        <div class="payment-header">
+          <span class="payment-title">Frais d'inscription</span>
+          <span class="payment-amount">50.00 $</span>
+        </div>
+
+        <div class="payment-methods">
+          <label class="method-option" [class.selected]="createForm.value.paymentMethod === 'MOBILE_MONEY'">
+            <input type="radio" value="MOBILE_MONEY" formControlName="paymentMethod" />
+            <i class="bi bi-phone"></i>
+            <span>Mobile Money</span>
+          </label>
+
+          <label class="method-option" [class.selected]="createForm.value.paymentMethod === 'VISA'">
+            <input type="radio" value="VISA" formControlName="paymentMethod" />
+            <i class="bi bi-credit-card"></i>
+            <span>Carte Visa / MasterCard</span>
+          </label>
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="paymentPhoneOrCard" class="form-label">
+            {{ createForm.value.paymentMethod === 'MOBILE_MONEY' ? 'Numéro de téléphone *' : 'Numéro de Carte Visa *' }}
+          </label>
+          <input
+            type="text"
+            id="paymentPhoneOrCard"
+            formControlName="paymentPhoneOrCard"
+            class="form-control"
+            [placeholder]="createForm.value.paymentMethod === 'MOBILE_MONEY' ? 'Ex: 0810000000' : 'Ex: 4500 0000 0000 0000'" />
+        </div>
+      </div>
+
+      <footer class="modal-footer">
+        <button type="button" class="btn-action btn-outline" (click)="closeCreateModal()">
+          Annuler
+        </button>
+        <button type="submit" class="btn-action btn-primary" [disabled]="store.loading()">
+          @if (store.loading()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span>Traitement...</span>
+          } @else {
+            <span>Payer & Soumettre le dossier</span>
+          }
+        </button>
+      </footer>
+    </form>
+
+  </div>
+</div>
+}

@@ -11,7 +11,6 @@ import { StorageService } from '../storage-service/storage-service';
 import { Toast } from '../../shared/toaste/Toast';
 import { Role } from '../models/User';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -35,28 +34,37 @@ export class AuthGuard implements CanActivate {
     const isLoggedIn = this.storage.isLoggedIn();
     const authResponse = this.storage.getUser();
 
-    // Sécurité : Vérifie si l'utilisateur est connecté et si l'objet user existe
-    if (!isLoggedIn || !authResponse || !authResponse.user) {
+    // 1. Vérification de la session
+    if (!isLoggedIn || !authResponse) {
       this.toast.info('Veuillez vous connecter.');
       return this.router.createUrlTree(['/login']);
     }
 
-    const allowedRoles = route.data['roles'] as Role[] | undefined;
+    const allowedRoles = route.data['roles'] as (string | Role)[] | undefined;
 
-    // Si aucune restriction de rôle n'est définie sur la route, on laisse passer
+    // 2. Si aucun rôle n'est exigé sur la route, accès autorisé
     if (!allowedRoles || allowedRoles.length === 0) {
       return true;
     }
 
-    // Récupération sécurisée des rôles depuis l'objet user
-    const userRoles = authResponse.user.roles || [];
+    // 3. Extraction de la liste des rôles (supporte authResponse.roles ou authResponse.user.roles)
+    const rawRoles: (Role | string)[] = authResponse.roles || authResponse.user?.roles || [];
 
-//    console.log('Allowed:', allowedRoles);
- //   console.log('User roles:', userRoles);
+    // Conversion de tous les rôles utilisateur sous forme de chaînes de caractères (slug, name, ou string brute)
+    const userRoleSlugs: string[] = rawRoles.map((r) => {
+      if (typeof r === 'string') return r;
+      return r.slug || r.name || '';
+    });
 
-    // Vérifie si l'utilisateur possède au moins l'un des rôles autorisés
-    const hasRole = userRoles.some(
-      (role: Role) => allowedRoles.includes(role)
+    // Conversion des rôles requis sous forme de chaînes de caractères
+    const allowedRoleSlugs: string[] = allowedRoles.map((r) => {
+      if (typeof r === 'string') return r;
+      return r.slug || r.name || '';
+    });
+
+    // 4. Comparaison des chaînes de caractères
+    const hasRole = userRoleSlugs.some((userRole) =>
+      allowedRoleSlugs.includes(userRole)
     );
 
     if (hasRole) {
