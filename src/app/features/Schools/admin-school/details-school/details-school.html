@@ -209,12 +209,9 @@
 <!-- TAB 3: ANNÉES SCOLAIRES -->
 @if (activeTab() === 'years') {
   <div class="card">
-    <h2>Gestion des Années Scolaires</h2>
     @if (store.selectedSchool(); as school) {
       <app-academic-management
         [schoolId]="school.id"
-        [academicYears]="academicYears()"
-        (academicYearSelected)="onAcademicYearChange($event)"
       ></app-academic-management>
     }
   </div>

@@ -16,22 +16,31 @@ import { environment } from '../../../../env';
   styleUrl: './verify-status-component.scss',
 })
 export class VerifyStatusComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
+
+ private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly http = inject(HttpClient);
-    private readonly apiUrl = `${environment.BASIC_URL}/enrollments`;
-
+  private readonly apiUrl = `${environment.BASIC_URL_VERIFY_STATUS}`;
 
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly result = signal<EnrollmentStatusResponseModel | null>(null);
+  readonly isGeneratingPdf = signal<boolean>(false);
+  readonly todayDate = new Date();
 
   readonly searchForm: FormGroup = this.fb.group({
     registrationNo: ['', [Validators.required, Validators.minLength(3)]]
   });
 
   ngOnInit(): void {
-    // Récupération automatique du numéro dans l'URL (queryParam: ?registrationNo=...)
+    // 1. Récupération par TOKEN (Envoyé par Email/SMS)
+    const token = this.route.snapshot.queryParamMap.get('token');
+    if (token) {
+      this.checkStatusByToken(token);
+      return;
+    }
+
+    // 2. Récupération par Numéro de dossier direct (Ancien système)
     const queryNo = this.route.snapshot.queryParamMap.get('registrationNo');
     if (queryNo) {
       this.searchForm.patchValue({ registrationNo: queryNo });
@@ -40,11 +49,30 @@ export class VerifyStatusComponent implements OnInit {
   }
 
   onSearch(): void {
-    // Utiliser 'this.searchForm' au lieu de 'searchForm'
     if (this.searchForm.invalid) return;
-
     const registrationNo = this.searchForm.value.registrationNo.trim();
     this.checkStatus(registrationNo);
+  }
+
+  private checkStatusByToken(token: string): void {
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+    this.result.set(null);
+
+    this.http.get<EnrollmentStatusResponseModel>(`${this.apiUrl}/status/verify-token`, {
+      params: { token }
+    }).subscribe({
+      next: (data) => {
+        this.result.set(data);
+        this.searchForm.patchValue({ registrationNo: data.registrationNo });
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        const message = err?.error?.message || 'Le lien de suivi est expiré ou invalide.';
+        this.errorMessage.set(message);
+        this.isLoading.set(false);
+      }
+    });
   }
 
   private checkStatus(registrationNo: string): void {
@@ -52,7 +80,7 @@ export class VerifyStatusComponent implements OnInit {
     this.errorMessage.set(null);
     this.result.set(null);
 
-    this.http.get<EnrollmentStatusResponseModel>(`${this.apiUrl}/public/status/${registrationNo}`)
+    this.http.get<EnrollmentStatusResponseModel>(`${this.apiUrl}/status/${registrationNo}`)
       .subscribe({
         next: (data) => {
           this.result.set(data);
@@ -66,9 +94,6 @@ export class VerifyStatusComponent implements OnInit {
       });
   }
 
-  readonly isGeneratingPdf = signal<boolean>(false);
-  readonly todayDate = new Date();
-
   downloadReceiptPdf(): void {
     const element = document.getElementById('receipt-pdf-content');
     if (!element) return;
@@ -76,15 +101,13 @@ export class VerifyStatusComponent implements OnInit {
     this.isGeneratingPdf.set(true);
 
     html2canvas(element, {
-      scale: 2, // Améliore la résolution du texte/image
+      scale: 2,
       useCORS: true,
       logging: false
     }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
-
-      // Configuration format A4 (Portrait, millimètres)
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210 mm
+      const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
@@ -96,4 +119,5 @@ export class VerifyStatusComponent implements OnInit {
       this.isGeneratingPdf.set(false);
     });
   }
+
 }

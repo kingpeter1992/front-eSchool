@@ -343,26 +343,26 @@ this.classForm.patchValue({
     this.assignTeacher.emit(classItem);
   }
 
-  closeModal(): void {
-    if (this.isSubmitting()) return;
+closeModal(): void {
+  // On débloque le loader et on ferme la modale
+  this.isSubmitting.set(false);
+  this.isModalOpen.set(false);
+  this.editingClassId.set(null);
+  this.resetCascade();
 
-    this.isModalOpen.set(false);
-    this.editingClassId.set(null);
-    this.resetCascade();
+  this.classForm.reset({
+    cycleId: null,
+    levelId: null,
+    sectionId: null,
+    optionId: null,
+    name: '',
+    roomId: null,
+    shift: 'MORNING',
+    maxCapacity: 30,
+  });
 
-    this.classForm.reset({
-      cycleId: null,
-      levelId: null,
-      sectionId: null,
-      optionId: null,
-      name: '',
-      roomId: null,
-      maxCapacity: 30,
-    });
-
-    this.close.emit();
-  }
-
+  this.close.emit();
+}
   private resetCascade(): void {
     this.selectedCycleId.set(null);
     this.selectedLevelId.set(null);
@@ -396,4 +396,10 @@ this.classForm.patchValue({
     const control = this.classForm.get(controlName);
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
+
+  // Méthode de secours/nettoyage appelée par le parent après succès de la sauvegarde
+onSaveSuccess(): void {
+  this.isSubmitting.set(false);
+  this.closeModal();
+}
 }

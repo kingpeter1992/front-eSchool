@@ -26,7 +26,6 @@ export class DetailsSchool implements OnInit {
   readonly store = inject(SchoolStore);
   readonly storeUser = inject(UserStore);
   readonly campusStore = inject(CampusStore);
-
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);

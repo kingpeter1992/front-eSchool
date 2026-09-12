@@ -188,7 +188,6 @@
     <!-- FORM -->
     <form [formGroup]="classForm" (ngSubmit)="onSubmit()" class="class-form">
       <div class="modal-body">
-
         <!-- SECTION 1: CASCADING STRUCTURE -->
         <div class="form-section">
           <div class="section-heading">
@@ -254,13 +253,16 @@
             <!-- 4. OPTION -->
             <div class="form-group">
               <label for="option">Option Pédagogique <span class="optional">(Optionnel)</span></label>
-              <div class="select-wrapper" [class.disabled-state]="!selectedSectionId() || filteredOptions().length === 0">
+              <div class="select-wrapper"
+                [class.disabled-state]="!selectedSectionId() || filteredOptions().length === 0">
                 <select id="option" formControlName="optionId">
                   <option [ngValue]="null">
-                    {{ selectedSectionId() ? (filteredOptions().length > 0 ? '-- Sélectionner une option --' : 'Aucune option disponible') : '🔒 Choisir d\'abord une section' }}
+                    {{ selectedSectionId() ? (filteredOptions().length > 0 ? '-- Sélectionner une option --' : 'Aucune
+                    option disponible') : '🔒 Choisir d\'abord une section' }}
                   </option>
                   @for (option of filteredOptions(); track option.id) {
-                  <option [value]="option.id">{{ option.name }} {{ option.code ? '(' + option.code + ')' : '' }}</option>
+                  <option [value]="option.id">{{ option.name }} {{ option.code ? '(' + option.code + ')' : '' }}
+                  </option>
                   }
                 </select>
               </div>
@@ -288,7 +290,8 @@
                   [class.invalid]="isInvalid('name')" />
               </div>
               @if (isInvalid('name')) {
-              <span class="error-message"><i class="pi pi-exclamation-circle"></i> Le nom de la classe est obligatoire.</span>
+              <span class="error-message"><i class="pi pi-exclamation-circle"></i> Le nom de la classe est
+                obligatoire.</span>
               }
             </div>
 

@@ -38,6 +38,12 @@ export const routes: Routes = [
         (m) => m.AttennteComponent,
       ),
   },
+
+  {
+    path: 'verify-status',
+    loadComponent: () => import('./features/Admission/Pages/verify-status-component/verify-status-component')
+      .then(m => m.VerifyStatusComponent)
+  },
   {
     path: 'unauthorized',
     loadComponent: () =>

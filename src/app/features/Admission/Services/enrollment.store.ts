@@ -144,31 +144,39 @@ export class EnrollmentStore {
   // CREATE (avec Photo & Callback)
   // ============================================================
 
-  create(
-    request: CreateEnrollmentRequest,
-    photoFile?: File | null,
-    documents?: File[],
-    onSuccess?: () => void,
-  ): void {
-    this._loading.set(true);
-    this._error.set(null);
+  // ============================================================
+// CREATE (avec Photo, Documents & Callbacks)
+// ============================================================
+create(
+  request: CreateEnrollmentRequest,
+  photoFile?: File | null,
+  documents?: File[],
+  onSuccess?: () => void,
+  onError?: () => void
+): void {
+  this._loading.set(true);
+  this._error.set(null);
 
-    // Envoi au service avec la photo ET le tableau de documents
-    this.service.create(request, photoFile, documents).subscribe({
-      next: (enrollment) => {
-        this._enrollments.update((list) => [enrollment, ...list]);
-        this._loading.set(false);
-        if (onSuccess) {
-          onSuccess();
-        }
-      },
-      error: (error) => {
-        console.error(error);
-        this._error.set(error?.error?.message || "Impossible de créer le dossier d'inscription.");
-        this._loading.set(false);
-      },
-    });
-  }
+  this.service.create(request, photoFile, documents).subscribe({
+    next: (enrollment) => {
+      this._enrollments.update((list) => [enrollment, ...list]);
+      this._loading.set(false);
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+    error: (error) => {
+      console.error(error);
+      const errorMessage = error?.error?.message || "Impossible de créer le dossier d'inscription.";
+      this._error.set(errorMessage);
+      this._loading.set(false); // Arrêt du chargement global du store
+
+      if (onError) {
+        onError();
+      }
+    },
+  });
+}
 
   // ============================================================
   // UPDATE

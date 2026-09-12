@@ -1,19 +1,23 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AcademicService } from './academic.service';
 import { Toast } from '../../../../shared/toaste/Toast';
-import { AcademicCycle, AcademicLevel, AcademicYear } from '../../models/academic.model';
+import { AcademicCycle, AcademicLevel, AcademicPeriod, AcademicPeriodStatus, AcademicTerm, AcademicYear } from '../../models/academic.model';
 import { CycleNode } from '../../models/academic-tree.model';
 import { finalize, Observable, of, tap } from 'rxjs';
+import { StorageService } from '../../../../core/storage-service/storage-service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AcademicStore {
+
 // ==========================================
   // INJECTIONS
   // ==========================================
   private readonly academicService = inject(AcademicService);
   private readonly academicYearService = inject(AcademicService);
+  private readonly storageService = inject(StorageService);
+
   private readonly toast = inject(Toast);
 
   // ==========================================
@@ -21,6 +25,7 @@ export class AcademicStore {
   // ==========================================
   // États Années Académiques (Cache)
   private readonly _years = signal<AcademicYear[]>([]);
+  private readonly _activeYear = signal<AcademicYear | null>(null);
   private readonly _loadingYears = signal<boolean>(false);
 
   // États Structure & Classes
@@ -47,7 +52,9 @@ export class AcademicStore {
     this._years().find((year) => year.status === 'ACTIVE') ?? null
   );
 
-  readonly activeYearId = computed(() => this.activeYear()?.id ?? null);
+  // Selecteurs publics (Read-only)
+  readonly activeYearId = computed(() => this._activeYear()?.id || '');
+
   // Signals
   private readonly _isYearsLoaded = signal<boolean>(false);
   readonly isCyclesLoaded = signal<boolean>(false);
@@ -62,7 +69,7 @@ export class AcademicStore {
       next: (data) => {
         this.tree.set(data);
         this.loading.set(false);
-        //console.log('Structure académique chargée avec succès :', data);
+//        console.log('Structure académique chargée avec succès :', data);
       },
       error: (err) => {
      //   console.error('Erreur chargement structure académique', err);
@@ -74,6 +81,22 @@ export class AcademicStore {
   // ==========================================
   // MODULE : Années Académiques (Cache & Active)
   // ==========================================
+
+
+  // Charge l'année académique active
+  loadActiveYear(schoolId: string): void {
+    if (!schoolId) return;
+    this.academicYearService.getYearsBySchoolActive(schoolId).subscribe({
+      next: (activeYear) => {
+        this._activeYear.set(activeYear);
+      },
+      error: (err) => {
+        console.error("Erreur lors du chargement de l'année active:", err);
+        this._activeYear.set(null);
+      },
+    });
+  }
+
 
   loadYears(schoolId: string, forceRefresh = false): void {
     if (!schoolId) return;
@@ -109,6 +132,7 @@ export class AcademicStore {
       next: (data) => {
         this.cycles.set(data);
         this.loading.set(false);
+      //  console.log('Charger les cycles et l\'arborescence', data)
       },
       error: (err) => {
         this.error.set(err.error?.message || 'Erreur lors du chargement des cycles');
@@ -469,6 +493,83 @@ export class AcademicStore {
         this.cycles.update((list) => [...list, newCycle]);
         this.toast.showSuccess('Cycle créé avec succès !');
         if (onSuccess) onSuccess();
+      }
+    });
+  }
+
+
+
+
+
+  // État
+  readonly yearsList = signal<AcademicYear[]>([]);
+  readonly selectedYear = signal<AcademicYear | null>(null);
+  readonly academicPeriods = signal<AcademicPeriod[]>([]);
+  readonly isLoading = signal<boolean>(false);
+
+  // Sécurité et Rôles
+  readonly canEditSchool = computed(() => {
+    const user = this.storageService.getUser();
+    if (!user || !user.roles || !Array.isArray(user.roles)) return false;
+
+    const allowedRoles = ['ROLE_SUPER_ADMIN', 'SUPER_ADMIN', 'ROLE_ADMIN_ECOLE', 'ADMIN_ECOLE'];
+    const userRoles: string[] = user.roles.map((r: any) =>
+      typeof r === 'string' ? r : (r.slug || r.name || r.code || r.id || '')
+    );
+
+    return userRoles.some(role => allowedRoles.includes(role));
+  });
+
+
+
+  selectYear(year: AcademicYear): void {
+    this.selectedYear.set(year);
+    this.academicYearService.getPeriods(year.id).subscribe({
+      next: (periods) => this.academicPeriods.set(periods),
+      error: () => this.academicPeriods.set([])
+    });
+  }
+
+
+
+  activateYear(schoolId: string, yearId: string): void {
+    if (!this.canEditSchool()) return;
+
+    this.academicYearService.activateYear(schoolId, yearId).subscribe({
+      next: () => this.loadYears(schoolId)
+    });
+  }
+
+  createYear(schoolId: string, data: Partial<AcademicYear>, callback?: () => void): void {
+    if (!this.canEditSchool()) return;
+
+    this.academicYearService.createYear(schoolId, data).subscribe({
+      next: () => {
+        this.loadYears(schoolId);
+        if (callback) callback();
+      }
+    });
+  }
+
+  createPeriod(periodData: Partial<AcademicPeriod>, callback?: () => void): void {
+    if (!this.canEditSchool()) return;
+
+    this.academicYearService.createPeriod(periodData).subscribe({
+      next: (created) => {
+        this.academicPeriods.update(list => [...list, created]);
+        if (callback) callback();
+      }
+    });
+  }
+
+  updatePeriodStatus(periodId: string, status: AcademicPeriodStatus): void {
+    if (!this.canEditSchool()) return;
+
+    this.academicYearService.updatePeriodStatus(periodId, status).subscribe({
+      next: (updated) => {
+        this.academicPeriods.update(periods =>
+          periods.map(p => p.id === periodId ? updated : p)
+        );
       }
     });
   }

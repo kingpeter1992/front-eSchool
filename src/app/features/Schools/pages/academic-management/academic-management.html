@@ -1,167 +1,1202 @@
 <div class="academic-container">
 
-  <!-- En-tête Année Scolaire Sélectionnée -->
-  <header class="active-year-banner">
-    <div class="banner-info">
-      <i class="pi pi-calendar-times icon-banner"></i>
-      <div>
-        <span class="label">Année Sélectionnée</span>
-        <h2>{{ selectedYear()?.name || 'Aucune année sélectionnée' }}</h2>
-      </div>
-    </div>
-    @if (selectedYear()) {
-      <span class="status-pill" [ngClass]="selectedYear()!.status.toLowerCase()">
-        {{ selectedYear()!.status }}
-      </span>
-    }
-  </header>
+  <!-- ============================================================
+       HEADER
+  ============================================================ -->
 
-  <!-- Section 1: Liste des Années Scolaires -->
+  <section class="page-header">
+
+    <div class="page-header-left">
+
+      <div class="page-icon">
+        <span>🎓</span>
+      </div>
+
+      <div>
+        <div class="breadcrumb">
+          Administration
+          <span>›</span>
+          Scolaires
+        </div>
+
+        <h1>Gestion des Années Scolaires</h1>
+
+        <p>
+          Configurez les années scolaires, les trimestres, les semestres
+          et les périodes académiques de votre établissement.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="school-context">
+
+      <div class="school-context-icon">
+        🏫
+      </div>
+
+      <div>
+        <span>Établissement</span>
+        <strong>{{ schoolId }}</strong>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ============================================================
+       ANNÉE ACTIVE
+  ============================================================ -->
+
+  <section class="active-year-banner">
+
+    <div class="active-year-content">
+
+      <div class="active-year-icon">
+        📅
+      </div>
+
+      <div>
+
+        <span class="eyebrow">
+          ANNÉE SCOLAIRE ACTIVE
+        </span>
+
+        <h2>
+          {{ store.selectedYear()?.name || 'Aucune année sélectionnée' }}
+        </h2>
+
+        @if (store.selectedYear()) {
+          <p>
+            {{ store.selectedYear()?.startDate | date:'dd MMMM yyyy' }}
+            —
+            {{ store.selectedYear()?.endDate | date:'dd MMMM yyyy' }}
+          </p>
+        } @else {
+          <p>
+            Sélectionnez une année scolaire pour gérer ses périodes.
+          </p>
+        }
+
+      </div>
+
+    </div>
+
+    @if (store.selectedYear()) {
+
+      <div class="active-year-status">
+
+        <span class="status-dot"></span>
+
+        <span>
+          {{ getStatusLabel(store.selectedYear()!.status) }}
+        </span>
+
+      </div>
+
+    }
+
+  </section>
+
+
+  <!-- ============================================================
+       KPI
+  ============================================================ -->
+
+  <section class="stats-grid">
+
+    <div class="stat-card">
+
+      <div class="stat-icon purple">
+        📚
+      </div>
+
+      <div class="stat-content">
+
+        <span>Années scolaires</span>
+
+        <strong>
+          {{ getYearCount() }}
+        </strong>
+
+        <small>
+          configurées
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon green">
+        ✓
+      </div>
+
+      <div class="stat-content">
+
+        <span>Année active</span>
+
+        <strong>
+          {{ store.activeYear() ? '1' : '0' }}
+        </strong>
+
+        <small>
+          année en cours
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon blue">
+        🗓
+      </div>
+
+      <div class="stat-content">
+
+        <span>Périodes</span>
+
+        <strong>
+          {{ getPeriodCount() }}
+        </strong>
+
+        <small>
+          dans l'année sélectionnée
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-icon orange">
+        ⚙
+      </div>
+
+      <div class="stat-content">
+
+        <span>Configuration</span>
+
+        <strong>Académique</strong>
+
+        <small>
+          calendrier scolaire
+        </small>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- ============================================================
+       ANNÉES SCOLAIRES
+  ============================================================ -->
+
   <section class="section-card">
-    <div class="section-header">
-      <div>
-        <h3>Liste des Années Scolaires</h3>
-        <p>École ID: {{ schoolId }}</p>
-      </div>
-      @if (canEditSchool()) {
-      <button class="btn btn-primary" (click)="isYearModalOpen.set(true)">
-        + Nouvelle Année
-      </button>
 
-    }
+    <div class="section-header">
+
+      <div class="section-title">
+
+        <div class="section-title-icon">
+          📚
+        </div>
+
+        <div>
+          <h3>Années scolaires</h3>
+
+          <p>
+            Gérez les différentes années académiques de votre établissement.
+          </p>
+        </div>
+
+      </div>
+
+      @if (store.canEditSchool()) {
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="openYearModal()"
+        >
+          <span>＋</span>
+          Nouvelle année
+        </button>
+
+      }
+
     </div>
 
-    <div class="table-responsive">
+
+    <!-- Table -->
+
+    <div class="table-wrapper">
+
       <table class="modern-table">
+
         <thead>
+
           <tr>
-            <th>Libellé</th>
-            <th>Date Début</th>
-            <th>Date Fin</th>
-            <th>Statut</th>
-            <th class="text-end">Actions</th>
+
+            <th>ANNÉE SCOLAIRE</th>
+            <th>PÉRIODE</th>
+            <th>STATUT</th>
+
+            @if (store.canEditSchool()) {
+              <th class="text-end">
+                ACTIONS
+              </th>
+            }
+
           </tr>
+
         </thead>
+
+
         <tbody>
-          @for (year of yearsList(); track year.id) {
+
+          @for (year of store.yearsList(); track year.id) {
+
             <tr
-              [class.highlight-row]="selectedYear()?.id === year.id"
+              [class.highlight-row]="store.selectedYear()?.id === year.id"
               (click)="selectYear(year)"
               class="clickable-row"
             >
-              <td><strong>{{ year.name }}</strong></td>
-              <td>{{ year.startDate | date:'dd/MM/yyyy' }}</td>
-              <td>{{ year.endDate | date:'dd/MM/yyyy' }}</td>
+
               <td>
-                <span class="status-pill" [ngClass]="year.status.toLowerCase()">
-                  {{ year.status }}
+
+                <div class="year-cell">
+
+                  <div class="year-avatar">
+                    📅
+                  </div>
+
+                  <div>
+
+                    <strong>
+                      {{ year.name }}
+                    </strong>
+
+                    <span>
+                      ID : {{ year.id }}
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </td>
+
+
+              <td>
+
+                <div class="date-range">
+
+                  <span>
+                    {{ year.startDate | date:'dd/MM/yyyy' }}
+                  </span>
+
+                  <span class="arrow">
+                    →
+                  </span>
+
+                  <span>
+                    {{ year.endDate | date:'dd/MM/yyyy' }}
+                  </span>
+
+                </div>
+
+              </td>
+
+
+              <td>
+
+                <span
+                  class="status-pill"
+                  [ngClass]="year.status.toLowerCase()"
+                >
+
+                  <span class="status-indicator"></span>
+
+                  {{ getStatusLabel(year.status) }}
+
                 </span>
+
               </td>
-              <td class="text-end" (click)="$event.stopPropagation()">
-                @if (year.status === 'PREPARATION') {
-                  @if (canEditSchool()) {
-                  <button class="btn btn-sm btn-outline-success" (click)="activateYear(year.id)">
-                    Activer
-                  </button>
-                }
-                }
-              </td>
+
+
+              @if (store.canEditSchool()) {
+
+                <td
+                  class="text-end"
+                  (click)="$event.stopPropagation()"
+                >
+
+                  @if (
+                    year.status === 'PREPARATION' ||
+                    year.status === 'CLOSED'
+                  ) {
+
+                    <button
+                      type="button"
+                      class="action-button activate"
+                      title="Activer"
+                      (click)="activateYear(year.id)"
+                    >
+                      ✓ Activer
+                    </button>
+
+                  } @else {
+
+                    <span class="no-action">
+                      —
+                    </span>
+
+                  }
+
+                </td>
+
+              }
+
             </tr>
+
+          } @empty {
+
+            <tr>
+
+              <td
+                [attr.colspan]="store.canEditSchool() ? 4 : 3"
+                class="empty-table"
+              >
+
+                <div class="empty-content">
+
+                  <div class="empty-icon">
+                    📚
+                  </div>
+
+                  <strong>
+                    Aucune année scolaire
+                  </strong>
+
+                  <span>
+                    Commencez par créer votre première année scolaire.
+                  </span>
+
+                  @if (store.canEditSchool()) {
+
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      (click)="openYearModal()"
+                    >
+                      ＋ Créer une année
+                    </button>
+
+                  }
+
+                </div>
+
+              </td>
+
+            </tr>
+
           }
+
         </tbody>
+
       </table>
+
     </div>
+
   </section>
 
-  <!-- Section 2: Périodes de l'Année Sélectionnée -->
-  @if (selectedYear()) {
-    <section class="section-card">
+
+  <!-- ============================================================
+       TRIMESTRES / SEMESTRES / PÉRIODES
+  ============================================================ -->
+
+  @if (store.selectedYear()) {
+
+    <section class="section-card periods-section">
+
       <div class="section-header">
-        <div>
-          <h3>Périodes Académiques ({{ selectedYear()?.name }})</h3>
-          <p>Gestion des découpages trimestriels / semestriels</p>
+
+        <div class="section-title">
+
+          <div class="section-title-icon blue-icon">
+            🗓
+          </div>
+
+          <div>
+
+            <h3>
+              Découpage académique
+            </h3>
+
+            <p>
+              Organisation des trimestres, semestres et périodes de
+              {{ store.selectedYear()?.name }}.
+            </p>
+
+          </div>
+
         </div>
-        @if (canEditSchool()) {
-        <button class="btn btn-secondary" (click)="isPeriodModalOpen.set(true)">
-          + Ajouter une Période
-        </button>
-      }
+
+
+        @if (store.canEditSchool()) {
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="openPeriodModal()"
+          >
+            <span>＋</span>
+            Ajouter
+          </button>
+
+        }
+
       </div>
 
-      <div class="grid-periods">
-        @for (period of academicPeriods(); track period.id) {
-          <div class="period-card" [class.locked]="period.status === 'CLOSED' || period.status === 'LOCKED'">
-            <div class="period-card-header">
-              <span class="period-code">{{ period.code }}</span>
-              <span class="status-pill" [ngClass]="period.status.toLowerCase()">
-                {{ period.status }}
-              </span>
-            </div>
 
-            <h4>{{ period.name }}</h4>
+      <!-- Ligne d'information -->
 
-            <div class="period-dates">
-              <span>{{ period.startDate | date:'dd/MM/yy' }} - {{ period.endDate | date:'dd/MM/yy' }}</span>
-            </div>
+      <div class="academic-context">
 
-            @if (isLateSubmission(period.endDate) && period.status === 'OPEN_FOR_GRADING') {
-              <div class="late-warning">
-                ⚠️ Saisie tardive autorisée (Traçabilité active)
+        <div class="context-item">
+
+          <span class="context-label">
+            Année
+          </span>
+
+          <strong>
+            {{ store.selectedYear()?.name }}
+          </strong>
+
+        </div>
+
+
+        <div class="context-divider"></div>
+
+
+        <div class="context-item">
+
+          <span class="context-label">
+            Début
+          </span>
+
+          <strong>
+            {{ store.selectedYear()?.startDate | date:'dd/MM/yyyy' }}
+          </strong>
+
+        </div>
+
+
+        <div class="context-divider"></div>
+
+
+        <div class="context-item">
+
+          <span class="context-label">
+            Fin
+          </span>
+
+          <strong>
+            {{ store.selectedYear()?.endDate | date:'dd/MM/yyyy' }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- Périodes -->
+
+      <div class="periods-grid">
+
+        @for (
+          period of store.academicPeriods();
+          track period.id
+        ) {
+
+          <article
+            class="period-card"
+            [class.locked]="
+              period.status === 'CLOSED' ||
+              period.status === 'LOCKED'
+            "
+          >
+
+            <!-- Header -->
+
+            <div class="period-card-top">
+
+              <div class="period-code">
+                {{ period.code }}
               </div>
+
+              <span
+                class="status-pill small"
+                [ngClass]="period.status.toLowerCase()"
+              >
+                <span class="status-indicator"></span>
+                {{ getStatusLabel(period.status) }}
+              </span>
+
+            </div>
+
+
+            <!-- Contenu -->
+
+            <div class="period-main">
+
+              <span class="period-type">
+                PÉRIODE ACADÉMIQUE
+              </span>
+
+              <h4>
+                {{ period.name }}
+              </h4>
+
+              <div class="period-date-box">
+
+                <div class="calendar-mini">
+                  📅
+                </div>
+
+                <div>
+
+                  <span>
+                    Du
+                  </span>
+
+                  <strong>
+                    {{ period.startDate | date:'dd/MM/yyyy' }}
+                  </strong>
+
+                  <span class="date-separator">
+                    au
+                  </span>
+
+                  <strong>
+                    {{ period.endDate | date:'dd/MM/yyyy' }}
+                  </strong>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- Footer -->
+
+            <div class="period-footer">
+
+              @if (store.canEditSchool()) {
+
+                <div class="status-control">
+
+                  <label>
+                    Statut
+                  </label>
+
+                  <select
+                    class="form-select"
+                    [ngModel]="period.status"
+                    (ngModelChange)="updatePeriodStatus(period.id, $event)"
+                  >
+
+                    <option value="UPCOMING">
+                      À venir
+                    </option>
+
+                    <option value="OPEN_FOR_GRADING">
+                      Saisie ouverte
+                    </option>
+
+                    <option value="CLOSED">
+                      Clôturée
+                    </option>
+
+                    <option value="LOCKED">
+                      Verrouillée
+                    </option>
+
+                  </select>
+
+                </div>
+
+              } @else {
+
+                <div class="readonly-status">
+
+                  <span>
+                    Statut
+                  </span>
+
+                  <strong>
+                    {{ getStatusLabel(period.status) }}
+                  </strong>
+
+                </div>
+
+              }
+
+            </div>
+
+          </article>
+
+        } @empty {
+
+          <div class="empty-periods">
+
+            <div class="empty-period-icon">
+              🗓
+            </div>
+
+            <h4>
+              Aucun découpage académique
+            </h4>
+
+            <p>
+              Aucun trimestre, semestre ou période n'a encore été
+              configuré pour cette année scolaire.
+            </p>
+
+            @if (store.canEditSchool()) {
+
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="openPeriodModal()"
+              >
+                ＋ Configurer les périodes
+              </button>
+
             }
 
-            <div class="period-actions">
-              @if (period.status === 'UPCOMING') {
-                @if (canEditSchool()) {
-                <button class="btn btn-sm btn-outline-primary" (click)="updatePeriodStatus(period.id, 'OPEN_FOR_GRADING')">
-                  Ouvrir Saisie
-                </button>
-              }
-              }
-              @if (period.status === 'OPEN_FOR_GRADING') {
-                @if (canEditSchool()) {
-                <button class="btn btn-sm btn-outline-danger" (click)="updatePeriodStatus(period.id, 'CLOSED')">
-                  Clôturer
-                </button>
-              }
-              }
-            </div>
           </div>
+
         }
+
       </div>
+
     </section>
+
   }
 
-  <!-- Modale Nouvelle Année -->
-  @if (isYearModalOpen()) {
-    <div class="modal-backdrop" (click)="isYearModalOpen.set(false)">
-      <div class="modal-card modal-xl" (click)="$event.stopPropagation()">
+
+  <!-- ============================================================
+       MODALE ANNÉE SCOLAIRE
+  ============================================================ -->
+
+  @if (store.canEditSchool() && isYearModalOpen()) {
+
+    <div
+      class="modal-backdrop"
+      (click)="closeYearModal()"
+    >
+
+      <div
+        class="modal-card"
+        (click)="$event.stopPropagation()"
+      >
+
         <div class="modal-header">
-          <h3>Créer une nouvelle Année Scolaire</h3>
-          <button class="btn-close" (click)="isYearModalOpen.set(false)">×</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Libellé (ex: 2027-2028)</label>
-              <input type="text" [(ngModel)]="newYear().name" placeholder="2027-2028" class="form-control" />
+
+          <div class="modal-heading">
+
+            <div class="modal-icon purple-modal">
+              📚
             </div>
-            <div class="form-group">
-              <label>Date de Début</label>
-              <input type="date" [(ngModel)]="newYear().startDate" class="form-control" />
+
+            <div>
+
+              <span>
+                CONFIGURATION ACADÉMIQUE
+              </span>
+
+              <h3>
+                Nouvelle année scolaire
+              </h3>
+
             </div>
-            <div class="form-group">
-              <label>Date de Fin</label>
-              <input type="date" [(ngModel)]="newYear().endDate" class="form-control" />
-            </div>
+
           </div>
+
+          <button
+            type="button"
+            class="btn-close"
+            (click)="closeYearModal()"
+          >
+            ×
+          </button>
+
         </div>
+
+
+        <div class="modal-body">
+
+          <div class="school-linked-box">
+
+            <div class="linked-icon">
+              🏫
+            </div>
+
+            <div>
+
+              <span>
+                Établissement
+              </span>
+
+              <strong>
+                {{ schoolId }}
+              </strong>
+
+            </div>
+
+            <div class="linked-check">
+              ✓
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="form-group full-width">
+
+              <label>
+                Nom de l'année scolaire
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                class="form-control premium-input"
+                placeholder="Ex. 2026-2027"
+                [ngModel]="newYear().name"
+                (ngModelChange)="updateYearField('name', $event)"
+              />
+
+              <small>
+                Exemple : 2026-2027
+              </small>
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Date de début
+                <span>*</span>
+              </label>
+
+              <input
+                type="date"
+                class="form-control premium-input"
+                [ngModel]="newYear().startDate"
+                (ngModelChange)="updateYearField('startDate', $event)"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Date de fin
+                <span>*</span>
+              </label>
+
+              <input
+                type="date"
+                class="form-control premium-input"
+                [ngModel]="newYear().endDate"
+                (ngModelChange)="updateYearField('endDate', $event)"
+              />
+
+            </div>
+
+
+            <div class="form-group full-width">
+
+              <label>
+                Statut initial
+              </label>
+
+              <select
+                class="form-control premium-input"
+                [ngModel]="newYear().status"
+                (ngModelChange)="updateYearField('status', $event)"
+              >
+
+                <option value="PREPARATION">
+                  Préparation
+                </option>
+
+                <option value="ACTIVE">
+                  Active
+                </option>
+
+                <option value="CLOSED">
+                  Clôturée
+                </option>
+
+                <option value="ARCHIVED">
+                  Archivée
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="isYearModalOpen.set(false)">Annuler</button>
-          <button class="btn btn-primary" (click)="saveYear()">Enregistrer</button>
+
+          <button
+            type="button"
+            class="btn btn-light"
+            (click)="closeYearModal()"
+          >
+            Annuler
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="
+              !newYear().name ||
+              !newYear().startDate ||
+              !newYear().endDate
+            "
+            (click)="saveYear()"
+          >
+            <span>✓</span>
+            Enregistrer l'année
+          </button>
+
         </div>
+
       </div>
+
     </div>
+
+  }
+
+
+  <!-- ============================================================
+       MODALE TRIMESTRE / SEMESTRE / PÉRIODE
+  ============================================================ -->
+
+  @if (store.canEditSchool() && isPeriodModalOpen()) {
+
+    <div
+      class="modal-backdrop"
+      (click)="closePeriodModal()"
+    >
+
+      <div
+        class="modal-card"
+        (click)="$event.stopPropagation()"
+      >
+
+        <div class="modal-header">
+
+          <div class="modal-heading">
+
+            <div class="modal-icon blue-modal">
+              🗓
+            </div>
+
+            <div>
+
+              <span>
+                {{ store.selectedYear()?.name }}
+              </span>
+
+              <h3>
+                Nouveau {{ getCategoryLabel() }}
+              </h3>
+
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            class="btn-close"
+            (click)="closePeriodModal()"
+          >
+            ×
+          </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+          <!-- Type -->
+
+          <div class="form-group">
+
+            <label>
+              Type de découpage
+            </label>
+
+            <div class="category-selector">
+
+              <button
+                type="button"
+                [class.active]="selectedPeriodCategory() === 'TRIMESTER'"
+                (click)="onCategoryChange('TRIMESTER')"
+              >
+
+                <span>▦</span>
+
+                <div>
+                  <strong>Trimestre</strong>
+                  <small>3 périodes</small>
+                </div>
+
+              </button>
+
+
+              <button
+                type="button"
+                [class.active]="selectedPeriodCategory() === 'SEMESTER'"
+                (click)="onCategoryChange('SEMESTER')"
+              >
+
+                <span>◫</span>
+
+                <div>
+                  <strong>Semestre</strong>
+                  <small>2 semestres</small>
+                </div>
+
+              </button>
+
+
+              <button
+                type="button"
+                [class.active]="selectedPeriodCategory() === 'PERIOD'"
+                (click)="onCategoryChange('PERIOD')"
+              >
+
+                <span>◷</span>
+
+                <div>
+                  <strong>Période</strong>
+                  <small>P1, P2, P3...</small>
+                </div>
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <!-- Nom -->
+
+            <div class="form-group full-width">
+
+              <label>
+                Nom
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                class="form-control premium-input"
+                placeholder="Ex. Trimestre 1"
+                [ngModel]="newPeriod().name"
+                (ngModelChange)="updatePeriodField('name', $event)"
+              />
+
+            </div>
+
+
+            <!-- Code -->
+
+            <div class="form-group">
+
+              <label>
+                Code
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                class="form-control premium-input uppercase"
+                placeholder="T1"
+                [ngModel]="newPeriod().code"
+                (ngModelChange)="updatePeriodField('code', $event)"
+              />
+
+            </div>
+
+
+            <!-- Statut -->
+
+            <div class="form-group">
+
+              <label>
+                Statut
+              </label>
+
+              <select
+                class="form-control premium-input"
+                [ngModel]="newPeriod().status"
+                (ngModelChange)="updatePeriodField('status', $event)"
+              >
+
+                <option value="UPCOMING">
+                  À venir
+                </option>
+
+                <option value="OPEN_FOR_GRADING">
+                  Saisie ouverte
+                </option>
+
+                <option value="CLOSED">
+                  Clôturée
+                </option>
+
+                <option value="LOCKED">
+                  Verrouillée
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <!-- Dates -->
+
+            <div class="form-group">
+
+              <label>
+                Date de début
+                <span>*</span>
+              </label>
+
+              <input
+                type="date"
+                class="form-control premium-input"
+                [ngModel]="newPeriod().startDate"
+                (ngModelChange)="updatePeriodField('startDate', $event)"
+              />
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Date de fin
+                <span>*</span>
+              </label>
+
+              <input
+                type="date"
+                class="form-control premium-input"
+                [ngModel]="newPeriod().endDate"
+                (ngModelChange)="updatePeriodField('endDate', $event)"
+              />
+
+            </div>
+
+          </div>
+
+
+          <!-- Résumé -->
+
+          <div class="configuration-preview">
+
+            <div class="preview-header">
+              <span>APERÇU</span>
+            </div>
+
+            <div class="preview-content">
+
+              <div class="preview-code">
+                {{ newPeriod().code || 'T1' }}
+              </div>
+
+              <div>
+
+                <strong>
+                  {{ newPeriod().name || 'Trimestre 1' }}
+                </strong>
+
+                <span>
+                  {{ newPeriod().startDate || 'Date début' }}
+                  →
+                  {{ newPeriod().endDate || 'Date fin' }}
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-light"
+            (click)="closePeriodModal()"
+          >
+            Annuler
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="
+              !store.selectedYear() ||
+              !newPeriod().name ||
+              !newPeriod().code ||
+              !newPeriod().startDate ||
+              !newPeriod().endDate
+            "
+            (click)="savePeriod()"
+          >
+            <span>✓</span>
+            Enregistrer
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
   }
 
 </div>

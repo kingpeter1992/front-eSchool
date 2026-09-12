@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal, ViewChild } from '@angular/core';
 import { SCHOOL_IMPORTS } from '../../services/school-imports';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -65,6 +65,8 @@ export class DashboardCampus implements OnInit {
   readonly academicStore = inject(AcademicStore);
   private readonly exportService = inject(ExportService);
   private readonly notificationService = inject(NotificationService);
+  // Dans le composant parent (ex: CampusDetailComponent)
+@ViewChild(CampusClassesTab) classesTabComponent!: CampusClassesTab;
 
   campusId = signal<string | null>(null);
   campus = signal<CampusResponse | null>(null);

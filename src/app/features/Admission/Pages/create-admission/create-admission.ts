@@ -1,11 +1,13 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, OnInit, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { EnrollmentStore } from '../../Services/enrollment.store';
-import { SCHOOL_IMPORTS } from '../../../Schools/services/school-imports';
-import { ClassStore } from '../../../Schools/services/calsse-service/class.store';
+import { AcademicApiStore } from '../../../Schools/services/academic-structure/AcademicApiStore';
 import { StorageService } from '../../../../core/storage-service/storage-service';
+import { ClassStore } from '../../../Schools/services/calsse-service/class.store';
+import { SCHOOL_IMPORTS } from '../../../Schools/services/school-imports';
+import { EnrollmentStore } from '../../Services/enrollment.store';
 import { AcademicStore } from '../../../Schools/services/academic-structure/academic.store';
+import { Toast } from '../../../../shared/toaste/Toast';
 
 @Component({
   selector: 'app-create-admission',
@@ -18,227 +20,205 @@ export class CreateAdmission implements OnInit {
   // ============================================================
   // DEPENDENCIES
   // ============================================================
-
   private readonly fb = inject(FormBuilder);
-
   private readonly router = inject(Router);
-
-  readonly store = inject(EnrollmentStore);
-
-  readonly classStore = inject(ClassStore);
-
-  readonly academicYear = inject(AcademicStore);
-
   private readonly authService = inject(StorageService);
 
-  // ============================================================
-  // STATE
-  // ============================================================
+  readonly store = inject(EnrollmentStore);
+  readonly academicStore = inject(AcademicStore);
+  readonly academicYear = inject(AcademicApiStore);
+  readonly toast = inject(Toast)
 
+  // ============================================================
+  // INPUTS DE L'ARBORESCENCE ACADÉMIQUE
+  // ============================================================
+  // ============================================================
+  // SOURCES DE DONNÉES (STORE) - Remplace les input()
+  // ============================================================
+    // Récupération des données depuis AcademicStore
+    tree = computed(() => this.academicStore.tree());
+    cycles = computed(() => this.academicStore.cycles());
+    levels = computed(() => this.academicStore.levels());
+    sections = computed(() => this.academicStore.sections());
+    options = computed(() => this.academicStore.options());
+
+  // ============================================================
+  // SIGNALS STATE & SÉLECTION
+  // ============================================================
   readonly selectedPhotoFile = signal<File | null>(null);
-
   readonly photoPreviewUrl = signal<string | null>(null);
-
   readonly documentFiles = signal<Map<number, File>>(new Map());
 
-  /**
-   * Modal de paiement
-   */
   readonly isPaymentModalOpen = signal(false);
-
-  /**
-   * Empêche les doubles clics pendant
-   * la création du dossier.
-   */
   readonly isProcessing = signal(false);
-
-  // ============================================================
-  // STEPS
-  // ============================================================
-
-  readonly steps = [
-    {
-      id: 1,
-      title: 'Élève',
-      description: 'Informations personnelles',
-    },
-
-    {
-      id: 2,
-      title: 'Parent',
-      description: 'Responsable légal',
-    },
-
-    {
-      id: 3,
-      title: 'Scolarité',
-      description: 'Affectation scolaire',
-    },
-
-    {
-      id: 4,
-      title: 'Documents',
-      description: 'Pièces justificatives',
-    },
-
-    {
-      id: 5,
-      title: 'Confirmation',
-      description: 'Vérification du dossier',
-    },
-  ];
 
   readonly currentStep = signal(1);
 
+  // Signals de sélection en cascade
+  readonly selectedCycleId = signal<string | null>(null);
+  readonly selectedLevelId = signal<string | null>(null);
+  readonly selectedSectionId = signal<string | null>(null);
+
+  // ============================================================
+  // STEPS & PROGRESSION
+  // ============================================================
+  readonly steps = [
+    { id: 1, title: 'Élève', description: 'Informations personnelles' },
+    { id: 2, title: 'Parent', description: 'Responsable légal' },
+    { id: 3, title: 'Scolarité', description: 'Affectation scolaire' },
+    { id: 4, title: 'Documents', description: 'Pièces justificatives' },
+    { id: 5, title: 'Confirmation', description: 'Vérification du dossier' },
+  ];
+
   readonly progress = computed(() => {
     const current = this.currentStep();
-
     return ((current - 1) / (this.steps.length - 1)) * 100;
   });
 
   // ============================================================
-  // FORMULAIRE INSCRIPTION
+  // CALCULS COMPUTED (ARBORESCENCE ACADÉMIQUE)
   // ============================================================
+  selectedCycleNode = computed(() => {
+    const id = this.selectedCycleId();
+    if (!id) return null;
 
+    const source = this.tree()?.length > 0 ? this.tree() : this.cycles();
+    return source?.find((c) => String(c.id) === String(id)) || null;
+  });
+
+  filteredLevels = computed(() => {
+    const node = this.selectedCycleNode();
+    if (node && node.levels) {
+      return node.levels;
+    }
+    const cycleId = this.selectedCycleId();
+    if (!cycleId) return [];
+    return this.levels().filter((l) => l.cycleId?.toString() === cycleId.toString());
+  });
+
+  filteredSections = computed(() => {
+    const node = this.selectedCycleNode();
+    if (node && node.sections) {
+      return node.sections;
+    }
+    const levelId = this.selectedLevelId();
+    if (!levelId) return [];
+    return this.sections().filter((s) => s.levelId?.toString() === levelId.toString());
+  });
+
+  filteredOptions = computed(() => {
+    const sectionId = this.selectedSectionId();
+    if (!sectionId) return [];
+
+    const sectionNode = this.filteredSections().find(
+      (s: any) => s.id?.toString() === sectionId.toString(),
+    );
+    if (sectionNode && sectionNode.options) {
+      return sectionNode.options;
+    }
+
+    return this.options().filter((o) => o.sectionId?.toString() === sectionId.toString());
+  });
+
+  // ============================================================
+  // FORMULAIRES REACTIFS
+  // ============================================================
   readonly createForm: FormGroup = this.fb.group({
-    // ----------------------------------------------------------
     // CONTEXTE
-    // ----------------------------------------------------------
-
     schoolId: ['', Validators.required],
-
     campusId: ['', Validators.required],
-
     academicYearId: ['', Validators.required],
 
-    // ----------------------------------------------------------
     // ÉLÈVE
-    // ----------------------------------------------------------
-
     candidateLastName: ['', Validators.required],
-
     candidatePostName: [''],
-
     candidateFirstName: ['', Validators.required],
-
     gender: ['M', Validators.required],
-
     candidateDateOfBirth: ['', Validators.required],
-
     placeOfBirth: [''],
-
     candidatePhone: ['', Validators.required],
-
     candidateEmail: ['', [Validators.required, Validators.email]],
-
     address: [''],
-
     city: [''],
-
     maritalStatus: ['Célibataire'],
-
     nationality: ['Congolaise'],
-
     originVillage: [''],
-
     district: [''],
-
     territory: [''],
 
-    // ----------------------------------------------------------
-    // SCOLARITÉ
-    // ----------------------------------------------------------
-
-    vacation: ['SOIR', Validators.required],
-
-    targetClass: ['', Validators.required],
-
-    cycle: [''],
-
-    section: [''],
-
-    option: [''],
-
+    // SCOLARITÉ / ORIENTATION
+    vacation: ['JOUR', Validators.required],
+    cycleId: [null, Validators.required],
+    levelId: [{ value: null, disabled: true }, Validators.required],
+    sectionId: [{ value: null, disabled: true }],
+    optionId: [{ value: null, disabled: true }],
+    targetClass: [''],
     previousSchool: [''],
-
     previousPercentage: [null],
 
-    // ----------------------------------------------------------
     // PARENT
-    // ----------------------------------------------------------
-
     parentFullName: [''],
-
     parentPhone: [''],
-
     parentAddress: [''],
 
-    // ----------------------------------------------------------
     // DOCUMENTS
-    // ----------------------------------------------------------
-
     documents: this.fb.array([]),
   });
 
-  // ============================================================
-  // FORMULAIRE PAIEMENT
-  // ============================================================
-
   readonly paymentForm: FormGroup = this.fb.group({
     paymentMethod: ['MOBILE_MONEY', Validators.required],
-
     paymentAccount: ['', Validators.required],
   });
-
-  // ============================================================
-  // DOCUMENT ARRAY
-  // ============================================================
 
   get documentsArray(): FormArray {
     return this.createForm.get('documents') as FormArray;
   }
 
   // ============================================================
-  // INIT
+  // CONSTRUCTOR & LIFECYCLE
   // ============================================================
-
-  ngOnInit(): void {
-    /**
-     * Chargement des inscriptions existantes.
-     */
-    this.store.loadEnrollments();
-
-    /**
-     * Initialisation automatique
-     * école / campus / année scolaire.
-     */
-    this.initializeFormValues();
-
-    /**
-     * Une première ligne document.
-     */
-    this.addDocumentRow();
+  constructor() {
+    effect(() => {
+    const active = this.academicYear.activeYear();
+    if (active?.id) {
+      this.createForm.patchValue({ academicYearId: active.id });
+    }
+  });
   }
 
+ngOnInit(): void {
+  const currentUser = this.authService.getUser();
+  const userSchoolId = currentUser?.school?.id;
+
+  if (userSchoolId) {
+    // 1. Charger la liste et l'année active
+    this.academicYear.loadYears(userSchoolId);
+
+    // 2. Charger les cycles et l'arborescence
+    this.academicStore.loadCycles(userSchoolId);
+    this.academicStore.loadStructureTree(userSchoolId);
+  }
+
+  this.store.loadEnrollments();
+  this.initializeFormValues();
+  this.addDocumentRow();
+}
+
+
   // ============================================================
-  // INITIALISATION SÉCURISÉE
+  // INITIALISATION DU FORMULAIRE
   // ============================================================
   private initializeFormValues(): void {
-    const academic = this.academicYear.activeYearId();
     const currentUser = this.authService.getUser();
-
-    // On extrait les IDs avec vérifications poussées selon les différentes structures d'objets possibles
-    const userSchoolId =
-      currentUser?.school?.id || currentUser?.school?.id || currentUser?.school || '';
-    const userCampusId =
-      currentUser?.campus?.id || currentUser?.campus.campusId || currentUser?.campus || '';
-    const userSchoolPhone =
-      currentUser?.school?.phone || currentUser?.school?.phone || '0814455824';
+    const userSchoolId = currentUser?.school?.id || currentUser?.school || '';
+    const userCampusId = currentUser?.campus?.id || currentUser?.campus || '';
+    const userSchoolPhone = currentUser?.school?.phone || '0814455824';
+    const activeYearId = this.academicYear.activeYear()?.id || '';
 
     this.createForm.patchValue({
       schoolId: userSchoolId,
       campusId: userCampusId,
-      academicYearId: academic || '',
+      academicYearId: activeYearId,
     });
 
     this.paymentForm.patchValue({
@@ -247,123 +227,168 @@ export class CreateAdmission implements OnInit {
   }
 
   // ============================================================
-  // PHOTO
+  // GESTION DU SÉLECTEUR EN CASCADE
   // ============================================================
+  // Dans create-admission.ts
+  onCycleChange(event: Event | string | null): void {
+    // Récupération de la valeur si c'est un événement de select HTML standard
+    const value =
+      typeof event === 'object' && event !== null && 'target' in event
+        ? (event.target as HTMLSelectElement).value
+        : event;
 
+    const normalizedId = value ? String(value) : null;
+
+    this.selectedCycleId.set(normalizedId);
+    this.selectedLevelId.set(null);
+    this.selectedSectionId.set(null);
+
+    // Synchronisation avec le ReactiveForm
+    this.createForm.patchValue({
+      cycleId: normalizedId,
+      levelId: null,
+      sectionId: null,
+      optionId: null,
+    });
+
+    const levelControl = this.createForm.get('levelId');
+    const sectionControl = this.createForm.get('sectionId');
+    const optionControl = this.createForm.get('optionId');
+
+    if (normalizedId) {
+      levelControl?.enable();
+      sectionControl?.enable();
+    } else {
+      levelControl?.disable();
+      sectionControl?.disable();
+    }
+    optionControl?.disable();
+  }
+
+  onLevelChange(): void {
+    const levelId = this.createForm.get('levelId')?.value;
+    const normalizedId = levelId ? levelId.toString() : null;
+
+    this.selectedLevelId.set(normalizedId);
+    this.selectedSectionId.set(null);
+
+    const sectionControl = this.createForm.get('sectionId');
+    const optionControl = this.createForm.get('optionId');
+
+    optionControl?.disable();
+    optionControl?.setValue(null);
+
+    if (normalizedId && this.filteredSections().length > 0) {
+      sectionControl?.enable();
+    } else {
+      sectionControl?.disable();
+    }
+    sectionControl?.setValue(null);
+  }
+
+  onSectionChange(sectionId: string | null): void {
+    const normalizedId = sectionId ? sectionId.toString() : null;
+    this.selectedSectionId.set(normalizedId);
+    this.createForm.patchValue({ optionId: null });
+
+    const optionControl = this.createForm.get('optionId');
+
+    if (normalizedId && this.filteredOptions().length > 0) {
+      optionControl?.enable();
+    } else {
+      optionControl?.disable();
+    }
+  }
+
+  setVacation(vacation: string): void {
+    this.createForm.patchValue({ vacation });
+  }
+
+  // ============================================================
+  // PHOTO MANAGEMENT
+  // ============================================================
   onPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-
-    if (!input.files || input.files.length === 0) {
-      return;
-    }
+    if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
-
     this.selectedPhotoFile.set(file);
 
     const reader = new FileReader();
-
     reader.onload = () => {
       this.photoPreviewUrl.set(reader.result as string);
     };
-
     reader.readAsDataURL(file);
   }
 
   // ============================================================
-  // DOCUMENTS
+  // DOCUMENTS MANAGEMENT
   // ============================================================
-
   addDocumentRow(): void {
     const docGroup = this.fb.group({
       documentType: ['', Validators.required],
-
       fileName: [''],
     });
-
     this.documentsArray.push(docGroup);
   }
 
   removeDocumentRow(index: number): void {
     this.documentsArray.removeAt(index);
-
     const updatedMap = new Map(this.documentFiles());
-
     updatedMap.delete(index);
-
     this.documentFiles.set(updatedMap);
   }
 
   onDocumentFileSelected(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
-
-    if (!input.files || input.files.length === 0) {
-      return;
-    }
+    if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
-
     this.documentsArray.at(index).patchValue({
       fileName: file.name,
     });
 
     const updatedMap = new Map(this.documentFiles());
-
     updatedMap.set(index, file);
-
     this.documentFiles.set(updatedMap);
   }
 
   // ============================================================
-  // PAYMENT
-  // ============================================================
-
-  // ============================================================
-  // PAYMENT - OUVERTURE DU MODAL AVEC AUTO-FIX
+  // PAYMENT MODAL
   // ============================================================
   openPaymentModal(): void {
-    console.log('➡️ Vérification avant ouverture paiement...');
-
-    // Fallback / Auto-correction : Si des identifiants requis sont manquants,
-    // on essaye de les récupérer directement depuis les Stores ou l'utilisateur courant
     const currentUser = this.authService.getUser();
 
     if (!this.createForm.get('schoolId')?.value) {
-      const fallbackSchoolId =
-        currentUser?.school?.id || currentUser?.school || currentUser?.school || 'DEFAULT_SCHOOL';
+      const fallbackSchoolId = currentUser?.school?.id || currentUser?.school || '';
       this.createForm.patchValue({ schoolId: fallbackSchoolId });
     }
 
     if (!this.createForm.get('campusId')?.value) {
-      const fallbackCampusId =
-        currentUser?.campus?.id || currentUser?.campus || currentUser?.campus || 'DEFAULT_CAMPUS';
+      const fallbackCampusId = currentUser?.campus?.id || currentUser?.campus || '';
       this.createForm.patchValue({ campusId: fallbackCampusId });
     }
 
     if (!this.createForm.get('academicYearId')?.value) {
-      const fallbackAcademicId = this.academicYear.activeYearId() || 'DEFAULT_ACADEMIC_YEAR';
+      const fallbackAcademicId = this.academicYear.activeYear()?.id || '';
       this.createForm.patchValue({ academicYearId: fallbackAcademicId });
     }
 
-    // Vérification de la validité après ré-injection
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
-
-      console.warn('❌ Formulaire inscription encore invalide :');
-      console.table(this.getFormValidationErrors(this.createForm));
+      console.warn(
+        '❌ Formulaire inscription invalide :',
+        this.getFormValidationErrors(this.createForm),
+      );
       return;
     }
 
-    // Si tout est bon, on réinitialise et on ouvre le modal
     this.paymentForm.markAsUntouched();
     this.isPaymentModalOpen.set(true);
   }
 
   closePaymentModal(): void {
-    if (this.isProcessing()) {
-      return;
-    }
-
+    if (this.isProcessing()) return;
     this.isPaymentModalOpen.set(false);
   }
 
@@ -373,191 +398,80 @@ export class CreateAdmission implements OnInit {
     }
   }
 
-  // ============================================================
-  // PAYMENT METHOD
-  // ============================================================
-
   setPaymentMethod(method: string): void {
-    this.paymentForm.patchValue({
-      paymentMethod: method,
-    });
+    this.paymentForm.patchValue({ paymentMethod: method });
   }
 
-  // ============================================================
-  // VACATION
-  // ============================================================
-
-  setVacation(vacation: string): void {
-    this.createForm.patchValue({
-      vacation,
-    });
+// ============================================================
+// SUBMISSION
+// ============================================================
+submitCreateEnrollmentAndPayment(): void {
+  if (this.createForm.invalid) {
+    this.createForm.markAllAsTouched();
+    return;
   }
 
-  // ============================================================
-  // SUBMIT
-  // ============================================================
-
-  submitCreateEnrollmentAndPayment(): void {
-    console.group('🚀 CRÉATION INSCRIPTION + PAIEMENT');
-
-    /**
-     * 1. Validation formulaire principal
-     */
-    if (this.createForm.invalid) {
-      console.error('❌ Le formulaire d’inscription est invalide');
-
-      this.createForm.markAllAsTouched();
-
-      console.table(this.getFormValidationErrors(this.createForm));
-
-      console.groupEnd();
-
-      return;
-    }
-
-    /**
-     * 2. Validation paiement
-     */
-    if (this.paymentForm.invalid) {
-      console.error('❌ Le formulaire de paiement est invalide');
-
-      this.paymentForm.markAllAsTouched();
-
-      console.table(this.getFormValidationErrors(this.paymentForm));
-
-      console.groupEnd();
-
-      return;
-    }
-
-    /**
-     * 3. Empêcher double clic
-     */
-    if (this.isProcessing()) {
-      console.warn('⏳ Une opération est déjà en cours.');
-
-      console.groupEnd();
-
-      return;
-    }
-
-    this.isProcessing.set(true);
-
-    /**
-     * 4. Récupération des données
-     */
-    const enrollmentData = this.createForm.getRawValue();
-
-    const paymentFormData = this.paymentForm.getRawValue();
-
-    /**
-     * 5. Génération d'une référence
-     *
-     * Pour le moment ce n'est PAS
-     * une transaction Finance.
-     *
-     * C'est simplement une référence
-     * transmise au backend.
-     */
-    const paymentReference = 'PAY-' + Date.now();
-
-    /**
-     * 6. Informations paiement
-     *
-     * Le backend peut recevoir ces données
-     * dès maintenant.
-     *
-     * Le traitement financier réel
-     * sera développé plus tard.
-     */
-    const paymentInfo = {
-      amountPaid: 5.0,
-
-      paymentMethod: paymentFormData.paymentMethod,
-
-      paymentPhoneOrCard: paymentFormData.paymentAccount,
-
-      paymentReference,
-
-      paymentReason: "Frais de dossier d'admission",
-
-      paymentDate: new Date().toISOString(),
-
-      schoolId: enrollmentData.schoolId,
-
-      campusId: enrollmentData.campusId,
-    };
-
-    /**
-     * 7. Payload final
-     */
-    const payload = {
-      ...enrollmentData,
-
-      paymentInfo,
-
-      amountPaid: paymentInfo.amountPaid,
-
-      paymentReference: paymentInfo.paymentReference,
-
-      paymentMethod: paymentInfo.paymentMethod,
-    };
-
-    console.log('📦 PAYLOAD INSCRIPTION :', enrollmentData);
-
-    console.log('💳 INFORMATIONS PAIEMENT :', paymentInfo);
-
-    console.log('📦 PAYLOAD FINAL :', payload);
-
-    /**
-     * 8. Fichiers
-     */
-    const attachedFiles = Array.from(this.documentFiles().values());
-
-    console.log('📎 Documents :', attachedFiles);
-
-    /**
-     * 9. Envoi au Store
-     */
-    this.store.create(
-      payload,
-
-      this.selectedPhotoFile(),
-
-      attachedFiles,
-
-      () => {
-        console.log('✅ Inscription créée avec succès');
-
-        this.isProcessing.set(false);
-
-        this.isPaymentModalOpen.set(false);
-
-        /**
-         * Retour à la liste
-         */
-        this.router.navigate(['/admin/enrollments']);
-      },
-    );
-
-    /**
-     * On laisse le Store gérer
-     * le loading réseau.
-     */
-    console.groupEnd();
+  if (this.paymentForm.invalid) {
+    this.paymentForm.markAllAsTouched();
+    return;
   }
 
-  // ============================================================
-  // NAVIGATION
-  // ============================================================
+  if (this.isProcessing()) return;
 
+  this.isProcessing.set(true);
+
+  const enrollmentData = this.createForm.getRawValue();
+  const paymentFormData = this.paymentForm.getRawValue();
+  const paymentReference = 'PAY-' + Date.now();
+
+  const paymentInfo = {
+    amountPaid: 5.0,
+    paymentMethod: paymentFormData.paymentMethod,
+    paymentPhoneOrCard: paymentFormData.paymentAccount,
+    paymentReference,
+    paymentReason: "Frais de dossier d'admission",
+    paymentDate: new Date().toISOString(),
+    schoolId: enrollmentData.schoolId,
+    campusId: enrollmentData.campusId,
+  };
+
+  const payload = {
+    ...enrollmentData,
+    paymentInfo,
+    amountPaid: paymentInfo.amountPaid,
+    paymentReference: paymentInfo.paymentReference,
+    paymentMethod: paymentInfo.paymentMethod,
+  };
+
+  const attachedFiles = Array.from(this.documentFiles().values());
+
+  this.store.create(
+    payload,
+    this.selectedPhotoFile(),
+    attachedFiles,
+    // Callback Succès
+    () => {
+      this.isProcessing.set(false);
+      this.isPaymentModalOpen.set(false);
+      this.toast.showSuccess('Admission soumise avec succès !');
+      this.router.navigate(['/enrollments']);
+    },
+    // Callback Échec
+    () => {
+      this.isProcessing.set(false);
+      this.toast.showError("Échec de la soumission du dossier.");
+    }
+  );
+}
+
+  // ============================================================
+  // NAVIGATION & STEPS
+  // ============================================================
   nextStep(): void {
     if (!this.canGoNext()) {
       this.markCurrentStepAsTouched();
-
       return;
     }
-
     if (this.currentStep() < this.steps.length) {
       this.currentStep.update((step) => step + 1);
     }
@@ -570,25 +484,13 @@ export class CreateAdmission implements OnInit {
   }
 
   goToStep(step: number): void {
-    /**
-     * Autorise uniquement
-     * le retour vers une étape déjà parcourue.
-     */
     if (step < this.currentStep()) {
       this.currentStep.set(step);
     }
   }
 
-  // ============================================================
-  // VALIDATION PAR ÉTAPE
-  // ============================================================
-
   canGoNext(): boolean {
     switch (this.currentStep()) {
-      // --------------------------------------------------------
-      // ÉTAPE 1
-      // --------------------------------------------------------
-
       case 1:
         return !!(
           this.createForm.get('candidateLastName')?.valid &&
@@ -597,42 +499,20 @@ export class CreateAdmission implements OnInit {
           this.createForm.get('candidateEmail')?.valid &&
           this.createForm.get('candidateDateOfBirth')?.valid
         );
-
-      // --------------------------------------------------------
-      // ÉTAPE 2
-      // --------------------------------------------------------
-
       case 2:
         return true;
-
-      // --------------------------------------------------------
-      // ÉTAPE 3
-      // --------------------------------------------------------
-
       case 3:
         return !!(
-          this.createForm.get('vacation')?.valid && this.createForm.get('targetClass')?.valid
+          this.createForm.get('vacation')?.valid &&
+          this.createForm.get('cycleId')?.valid &&
+          this.createForm.get('levelId')?.valid
         );
-
-      // --------------------------------------------------------
-      // ÉTAPE 4
-      // --------------------------------------------------------
-
       case 4:
         return this.documentsArray.length > 0;
-
-      // --------------------------------------------------------
-      // ÉTAPE 5
-      // --------------------------------------------------------
-
       default:
         return true;
     }
   }
-
-  // ============================================================
-  // MARK TOUCH
-  // ============================================================
 
   private markCurrentStepAsTouched(): void {
     switch (this.currentStep()) {
@@ -643,51 +523,30 @@ export class CreateAdmission implements OnInit {
           'candidatePhone',
           'candidateEmail',
           'candidateDateOfBirth',
-        ].forEach((field) => {
-          this.createForm.get(field)?.markAsTouched();
-        });
-
+        ].forEach((field) => this.createForm.get(field)?.markAsTouched());
         break;
-
       case 3:
-        ['vacation', 'targetClass'].forEach((field) => {
-          this.createForm.get(field)?.markAsTouched();
-        });
-
+        ['vacation', 'cycleId', 'levelId'].forEach((field) =>
+          this.createForm.get(field)?.markAsTouched(),
+        );
         break;
-
       case 4:
         this.documentsArray.markAllAsTouched();
-
         break;
     }
   }
 
-  // ============================================================
-  // BACK
-  // ============================================================
-
   back(): void {
-    this.router.navigate(['/admin/enrollments']);
+    this.router.navigate(['/enrollments']);
   }
-
-  // ============================================================
-  // DEBUG VALIDATION
-  // ============================================================
 
   private getFormValidationErrors(form: FormGroup | FormArray): Record<string, any> {
     const errors: Record<string, any> = {};
-
     Object.keys(form.controls).forEach((key) => {
       const control = form.get(key);
-
       if (control?.errors) {
         errors[key] = control.errors;
       }
-
-      /**
-       * Gestion des FormArray
-       */
       if (control instanceof FormArray) {
         control.controls.forEach((childControl, index) => {
           if (childControl.errors) {
@@ -696,7 +555,36 @@ export class CreateAdmission implements OnInit {
         });
       }
     });
-
     return errors;
   }
+
+
+  // ============================================================
+// LIBELLÉS RÉSUMÉ (COMPUTED)
+// ============================================================
+selectedCycleName = computed(() => {
+  const node = this.selectedCycleNode();
+  return node ? node.name : 'N/A';
+});
+
+selectedLevelName = computed(() => {
+  const levelId = this.selectedLevelId();
+  if (!levelId) return 'Non spécifié';
+  const level = this.filteredLevels().find((l: any) => String(l.id) === String(levelId));
+  return level ? level.name : 'Non spécifié';
+});
+
+selectedSectionName = computed(() => {
+  const sectionId = this.selectedSectionId();
+  if (!sectionId) return 'N/A';
+  const section = this.filteredSections().find((s: any) => String(s.id) === String(sectionId));
+  return section ? section.name : 'N/A';
+});
+
+selectedOptionName = computed(() => {
+  const optionId = this.createForm.get('optionId')?.value;
+  if (!optionId) return 'N/A';
+  const option = this.filteredOptions().find((o: any) => String(o.id) === String(optionId));
+  return option ? option.name : 'N/A';
+});
 }

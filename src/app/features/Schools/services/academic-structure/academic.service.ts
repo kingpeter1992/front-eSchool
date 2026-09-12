@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AcademicCycle, AcademicSection, AcademicOption, AcademicLevel, AcademicYear } from '../../models/academic.model';
+import { AcademicCycle, AcademicSection, AcademicOption, AcademicLevel, AcademicYear, AcademicPeriod, AcademicPeriodStatus } from '../../models/academic.model';
 import { environment } from '../../../../env';
 import { CycleNode } from '../../models/academic-tree.model';
 
@@ -67,6 +67,12 @@ export class AcademicService {
   }
 
 
+   getYearsBySchoolActive(schoolId: string): Observable<AcademicYear> {
+    const params = new HttpParams().set('schoolId', schoolId);
+    return this.http.get<AcademicYear>(`${this.baseUrl}/active`, { params });
+  }
+
+
   deleteClass(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/classes/${id}`);
   }
@@ -74,6 +80,44 @@ export class AcademicService {
 getStructureTree(schoolId: string): Observable<CycleNode[]> {
     return this.http.get<CycleNode[]>(`${this.baseUrl2}/tree/${schoolId}`);
   }
+
+
+
+
+  getYears(schoolId: string): Observable<AcademicYear[]> {
+    return this.http.get<AcademicYear[]>(`${this.baseUrl}/academic-years-list`, {
+      params: new HttpParams().set('schoolId', schoolId)
+    });
+  }
+
+  createYear(schoolId: string, year: Partial<AcademicYear>): Observable<AcademicYear> {
+    return this.http.post<AcademicYear>(`${this.baseUrl}/academic-years-create`, year, {
+      params: new HttpParams().set('schoolId', schoolId)
+    });
+  }
+
+  activateYear(schoolId: string, yearId: string): Observable<AcademicYear> {
+    return this.http.patch<AcademicYear>(`${this.baseUrl}/academic-years/${yearId}/activate`, null, {
+      params: new HttpParams().set('schoolId', schoolId)
+    });
+  }
+
+  getPeriods(yearId: string): Observable<AcademicPeriod[]> {
+    return this.http.get<AcademicPeriod[]>(`${this.baseUrl}/academic-periods`, {
+      params: new HttpParams().set('yearId', yearId)
+    });
+  }
+
+  createPeriod(period: Partial<AcademicPeriod>): Observable<AcademicPeriod> {
+    return this.http.post<AcademicPeriod>(`${this.baseUrl}/academic-periods`, period);
+  }
+
+  updatePeriodStatus(periodId: string, status: AcademicPeriodStatus): Observable<AcademicPeriod> {
+    return this.http.patch<AcademicPeriod>(`${this.baseUrl}/academic-periods/${periodId}/status`, null, {
+      params: new HttpParams().set('status', status)
+    });
+  }
+
 
   // ==========================================
   // UPDATES & DELETES - STRUCTURE ACADÉMIQUE

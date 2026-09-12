@@ -14,10 +14,11 @@ export const jwtInterceptor: HttpInterceptorFn = (
   const storageService = inject(StorageService);
   const toastrService = inject(Toast);
   const loaderService = inject(LoaderService);
-
-  const publicUrls = [
+  // Exclure les requêtes d'admission publiques
+    const publicUrls = [
     '/api/auth/login',
-    '/api/auth/register'
+    '/api/auth/register',
+    '/enrollments/public/'
   ];
 
   const isPublicUrl = publicUrls.some(url => req.url.includes(url));

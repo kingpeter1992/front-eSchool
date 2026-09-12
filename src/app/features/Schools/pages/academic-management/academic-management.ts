@@ -1,7 +1,8 @@
-import { Component, computed, EventEmitter, inject, Input, OnChanges, Output, signal, SimpleChanges } from '@angular/core';
+import { Component,   EventEmitter,   inject, Input, OnChanges,  Output,  signal, SimpleChanges } from '@angular/core';
 import { SCHOOL_IMPORTS } from '../../services/school-imports';
-import { AcademicPeriod, AcademicPeriodStatus, AcademicYear } from '../../models/academic.model';
-import { StorageService } from '../../../../core/storage-service/storage-service';
+import { AcademicPeriod,  AcademicPeriodStatus,  AcademicTerm, AcademicYear, AcademicYearStatus  } from '../../models/academic.model';
+import { AcademicApiStore } from '../../services/academic-structure/AcademicApiStore';
+import { Toast } from '../../../../shared/toaste/Toast';
 
 @Component({
   selector: 'app-academic-management',
@@ -12,116 +13,237 @@ import { StorageService } from '../../../../core/storage-service/storage-service
 })
 export class AcademicManagement implements OnChanges {
 
-  // Inputs transmis par le composant parent
   @Input({ required: true }) schoolId!: string;
-  @Input({ required: true }) academicYears: AcademicYear[] = [];
+  @Input() academicYears: AcademicYear[] = [];
 
-  // Output émis vers le composant parent
   @Output() academicYearSelected = new EventEmitter<AcademicYear>();
 
-  // Signals locaux pour la gestion de l'état du composant
-  yearsList = signal<AcademicYear[]>([]);
-  selectedYear = signal<AcademicYear | null>(null);
+  readonly store = inject(AcademicApiStore);
+  readonly toast = inject(Toast)
 
-  // Exemple de données simulées pour les périodes de l'année sélectionnée
-  academicPeriods = signal<AcademicPeriod[]>([
-    { id: 'p1', academicYearId: '2', name: 'Premier Trimestre', code: 'T1', startDate: '2026-09-01', endDate: '2026-11-30', status: 'OPEN_FOR_GRADING' },
-    { id: 'p2', academicYearId: '2', name: 'Deuxième Trimestre', code: 'T2', startDate: '2026-12-01', endDate: '2027-02-28', status: 'UPCOMING' },
-    { id: 'p3', academicYearId: '2', name: 'Troisième Trimestre', code: 'T3', startDate: '2027-03-01', endDate: '2027-06-30', status: 'UPCOMING' }
-  ]);
+  // ============================================================
+  // UI
+  // ============================================================
+  readonly isYearModalOpen = signal(false);
+  readonly isPeriodModalOpen = signal(false);
+  readonly selectedPeriodCategory = signal<'TRIMESTER' | 'SEMESTER' | 'PERIOD'>('TRIMESTER');
 
-
-   private readonly storageService = inject(StorageService);
-
-  // Signal / Computed pour vérifier les rôles
-  readonly canEditSchool = computed(() => {
-  const user = this.storageService.getUser();
-  if (!user || !user.roles) return false;
-
-  const allowedRoles = ['ROLE_SUPER_ADMIN', 'SUPER_ADMIN', 'ROLE_ADMIN_ECOLE', 'ADMIN_ECOLE'];
-
-  // Extraction propre des rôles qu'ils soient sous forme de chaînes ou d'objets
-  const userRoleKeys: string[] = user.roles.map((r: any) => {
-    if (typeof r === 'string') return r;
-    return r.slug || r.name || r.id || '';
+  // ============================================================
+  // NOUVELLE ANNÉE
+  // ============================================================
+  readonly newYear = signal<{
+    name: string;
+    startDate: string;
+    endDate: string;
+    status: AcademicYearStatus;
+  }>({
+    name: '',
+    startDate: '',
+    endDate: '',
+    status: 'PREPARATION'
   });
 
-  return userRoleKeys.some((roleKey) => allowedRoles.includes(roleKey));
-});
+  // ============================================================
+  // NOUVELLE PÉRIODE
+  // ============================================================
+  readonly newPeriod = signal<{
+    name: string;
+    code: string;
+    startDate: string;
+    endDate: string;
+    status: AcademicPeriodStatus;
+  }>({
+    name: '',
+    code: '',
+    startDate: '',
+    endDate: '',
+    status: 'UPCOMING'
+  });
 
-
-
-  // Modales & Formulaires
-  isYearModalOpen = signal(false);
-  isPeriodModalOpen = signal(false);
-
-  newYear = signal<Partial<AcademicYear>>({ name: '', startDate: '', endDate: '' });
-  newPeriod = signal<Partial<AcademicPeriod>>({ name: '', code: '', startDate: '', endDate: '' });
-
+  // ============================================================
+  // LIFECYCLE
+  // ============================================================
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['academicYears'] && this.academicYears) {
-      this.yearsList.set(this.academicYears);
-
-      // Définit par défaut l'année ACTIVE ou la première de la liste
-      const active = this.academicYears.find(y => y.status === 'ACTIVE') || this.academicYears[0] || null;
-      if (active) {
-        this.selectYear(active);
-      }
+    if (changes['schoolId'] && this.schoolId) {
+      this.store.loadYears(this.schoolId);
     }
   }
 
-  // Sélectionner une année et notifier le parent
+  // ============================================================
+  // ANNÉE SCOLAIRE
+  // ============================================================
   selectYear(year: AcademicYear): void {
-    this.selectedYear.set(year);
+    this.store.selectYear(this.schoolId, year);
     this.academicYearSelected.emit(year);
   }
 
-  // Action pour activer une année
   activateYear(yearId: string): void {
-    const updated = this.yearsList().map(y => ({
-      ...y,
-      status: y.id === yearId ? ('ACTIVE' as const) : (y.status === 'ACTIVE' ? ('CLOSED' as const) : y.status)
-    }));
-
-    this.yearsList.set(updated);
-    const newlyActive = updated.find(y => y.id === yearId);
-    if (newlyActive) {
-      this.selectYear(newlyActive);
-    }
+    this.store.activateYear(this.schoolId, yearId).subscribe({
+      next: () => this.toast.showSuccess('Année académique activée avec succès'),
+      error: () =>  this.toast.info("Erreur lors de l'activation de l'année")
+    });
   }
 
-  // Enregistrer une nouvelle année
-  saveYear(): void {
-    const yearData = this.newYear();
-    if (!yearData.name || !yearData.startDate || !yearData.endDate) return;
+  openYearModal(): void {
+    this.resetYearForm();
+    this.isYearModalOpen.set(true);
+  }
 
-    if (yearData.endDate! <= yearData.startDate!) {
-      alert("La date de fin doit être strictement postérieure à la date de début.");
+  closeYearModal(): void {
+    this.isYearModalOpen.set(false);
+    this.resetYearForm();
+  }
+
+  saveYear(): void {
+    const data = this.newYear();
+
+    if (!data.name || !data.startDate || !data.endDate) {
+      this.toast.info('Veuillez remplir tous les champs obligatoires.');
       return;
     }
 
-    const created: AcademicYear = {
-      id: Date.now().toString(),
-      schoolId: this.schoolId,
-      name: yearData.name!,
-      startDate: yearData.startDate!,
-      endDate: yearData.endDate!,
+    if (data.endDate <= data.startDate) {
+      this.toast.info('La date de fin doit être postérieure à la date de début.');
+      return;
+    }
+
+    this.store.createYear(this.schoolId, data).subscribe({
+      next: () => {
+        this.toast.showSuccess('Année académique créée avec succès');
+        this.closeYearModal();
+      },
+      error: () => this.toast.info("Erreur lors de la création de l'année")
+    });
+  }
+
+  resetYearForm(): void {
+    this.newYear.set({
+      name: '',
+      startDate: '',
+      endDate: '',
       status: 'PREPARATION'
+    });
+  }
+
+  updateYearField(
+    field: 'name' | 'startDate' | 'endDate' | 'status',
+    value: string
+  ): void {
+    this.newYear.update(current => ({
+      ...current,
+      [field]: value
+    }));
+  }
+
+  // ============================================================
+  // PÉRIODES
+  // ============================================================
+  openPeriodModal(): void {
+    this.resetPeriodForm();
+    this.isPeriodModalOpen.set(true);
+  }
+
+  closePeriodModal(): void {
+    this.isPeriodModalOpen.set(false);
+    this.resetPeriodForm();
+  }
+
+  savePeriod(): void {
+    const currentYear = this.store.selectedYear();
+    const data = this.newPeriod();
+
+    if (!currentYear || !data.name || !data.code || !data.startDate || !data.endDate) {
+      this.toast.info('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+
+    if (data.endDate <= data.startDate) {
+     this.toast.info('La date de fin doit être postérieure à la date de début.');
+      return;
+    }
+
+    this.store.createPeriod(this.schoolId, {
+      ...data,
+      code: data.code.toUpperCase()
+    }).subscribe({
+      next: () => {
+       this.toast.showSuccess('Période créée avec succès');
+        this.closePeriodModal();
+      },
+      error: () => this.toast.info('Erreur lors de la création de la période')
+    });
+  }
+
+  resetPeriodForm(): void {
+    this.newPeriod.set({
+      name: '',
+      code: '',
+      startDate: '',
+      endDate: '',
+      status: 'UPCOMING'
+    });
+    this.selectedPeriodCategory.set('TRIMESTER');
+  }
+
+  updatePeriodField(
+    field: 'name' | 'code' | 'startDate' | 'endDate' | 'status',
+    value: string
+  ): void {
+    this.newPeriod.update(current => ({
+      ...current,
+      [field]: value
+    }));
+  }
+
+  updatePeriodStatus(periodId: string, status: AcademicPeriodStatus): void {
+    this.store.updatePeriodStatus(this.schoolId, periodId, status).subscribe({
+      next: () => this.toast.showSuccess('Statut de la période mis à jour'),
+      error: () => this.toast.info('Erreur lors de la mise à jour du statut')
+    });
+  }
+
+  onCategoryChange(category: 'TRIMESTER' | 'SEMESTER' | 'PERIOD'): void {
+    this.selectedPeriodCategory.set(category);
+    const current = this.newPeriod();
+
+    if (category === 'TRIMESTER') {
+      this.newPeriod.set({ ...current, code: 'T1', name: 'Trimestre 1' });
+    } else if (category === 'SEMESTER') {
+      this.newPeriod.set({ ...current, code: 'S1', name: 'Semestre 1' });
+    } else if (category === 'PERIOD') {
+      this.newPeriod.set({ ...current, code: 'P1', name: 'Période 1' });
+    }
+  }
+
+  // ============================================================
+  // HELPERS UI
+  // ============================================================
+  getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      ACTIVE: 'Active',
+      PREPARATION: 'Préparation',
+      CLOSED: 'Clôturée',
+      ARCHIVED: 'Archivée',
+      UPCOMING: 'À venir',
+      OPEN_FOR_GRADING: 'Saisie ouverte',
+      LOCKED: 'Verrouillée'
     };
 
-    this.yearsList.update(list => [...list, created]);
-    this.isYearModalOpen.set(false);
-    this.newYear.set({ name: '', startDate: '', endDate: '' });
+    return labels[status] ?? status;
   }
 
-  // Action sur les périodes
-  updatePeriodStatus(periodId: string, status: AcademicPeriodStatus): void {
-    this.academicPeriods.update(periods =>
-      periods.map(p => p.id === periodId ? { ...p, status } : p)
-    );
+  getCategoryLabel(): string {
+    const category = this.selectedPeriodCategory();
+    if (category === 'TRIMESTER') return 'Trimestre';
+    if (category === 'SEMESTER') return 'Semestre';
+    return 'Période';
   }
 
-  isLateSubmission(endDate: string): boolean {
-    return new Date() > new Date(endDate);
+  getYearCount(): number {
+    return this.store.yearsList().length;
+  }
+
+  getPeriodCount(): number {
+    return this.store.periodsList().length;
   }
 }

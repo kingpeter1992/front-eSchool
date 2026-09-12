@@ -1,4 +1,5 @@
 export type AcademicYearStatus = 'PREPARATION' | 'ACTIVE' | 'CLOSED' | 'ARCHIVED';
+export type AcademicTermType = 'TRIMESTER' | 'SEMESTER' | 'PERIOD';
 export type AcademicPeriodStatus = 'UPCOMING' | 'OPEN_FOR_GRADING' | 'CLOSED' | 'LOCKED';
 
 export interface AcademicYear {
@@ -10,16 +11,27 @@ export interface AcademicYear {
   status: AcademicYearStatus;
 }
 
+export interface AcademicTerm {
+  id: string;
+  academicYearId: string;
+  type: AcademicTermType;
+  name: string;
+  code: string;
+  startDate: string;
+  endDate: string;
+  status?: string;
+}
+
 export interface AcademicPeriod {
   id: string;
   academicYearId: string;
+  academicTermId: string;
   name: string;
   code: string;
   startDate: string;
   endDate: string;
   status: AcademicPeriodStatus;
 }
-
 export interface EditDialogData {
   title: string;
   name: string;
@@ -55,6 +67,7 @@ export interface AcademicLevel {
   name: string;
   orderIndex: number;
   optionId?: string;
+  cycleId?:string
 }
 
 
